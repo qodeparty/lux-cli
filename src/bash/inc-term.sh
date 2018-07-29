@@ -44,6 +44,7 @@
     opt_verbose=1
     opt_debug=1
     opt_basis=
+    opt_dump_col="$orange"
 
     [[ "${@}" =~ "--debug" ]] && opt_debug=0 || :
     [[ "${@}" =~ "--info"  ]] && opt_verbose=0 || :
@@ -128,7 +129,7 @@
       handle_input
       for i in ${!arr[@]}; do
         this="${arr[$i]}"
-        [ -n "$this" ] && printf "$flag$orange$dots(%02d of %02d) $this $x$newl" "$i" "$len"
+        [ -n "$this" ] && printf "$flag$opt_dump_col$dots(%02d of %02d) $this $x$newl" "$i" "$len"
         sleep 0.1
       done
       cleanup

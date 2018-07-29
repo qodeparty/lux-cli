@@ -1,30 +1,47 @@
 #!/usr/bin/env bash
 
 	function check_rc_repos(){
-		local res ret
-		[ -f "$LUX_RC" ] && source $LUX_RC
+		local res ret next
 
 		if [ -z "$LUX_SEARCH_PATH" ]; then
 			if confirm "[ ${delta}LUX SEARCH MISSING${x} ] Do you want to run repo finder (y/n)? > "; then
 				#reset_user_data
-				#sleep 0.5
-				clear
-				read -p "Where shoud Lux search for Repos? -> " SEARCH_PATH
+				  sleep 0.2
+					#clear
 
-				lux_need_align_repos;ret=$?
+					while [[ -z "$next" ]]; do
+						read -p "Where shoud Lux search for Repos? -> " SEARCH_PATH
+						res=$(eval echo $SEARCH_PATH)
+						if confirm "Search for Lux repos in [ ${blue}$res${x} ] (y/n)? > "; then
 
-				if [ $ret -eq 0 ]; then
-					res=$(eval echo $SEARCH_PATH)
-					if [ -d $res ]; then
-						success "Found Search path $res" "$ret"
-						lux_find_repos "$res"; ret=$?
-						[ $ret -eq 0 ] && LUX_SEARCH_PATH="$res" || :
-						silly "Search path was $res"
-						lux_align_repos;
-					else
-					  fatal "Unable to find search path -> $res"
+							if [ ! -d $res ]; then
+								warn "Couldn't find the directory at [ ${blue}$res${x} ]! Try Again."
+							else
+								next=1
+							fi
+
+						fi
+					done
+
+					lux_need_align_repos;ret=$?
+
+					info "Return RC REPOS $ret"
+
+					if [ $ret -eq 0 ]; then
+
+							if [ -d $res ]; then
+								success "Found Search path $res" "$ret"
+								lux_find_repos "$res"; ret=$?
+								[ $ret -eq 0 ] && LUX_SEARCH_PATH="$res" || :
+								silly "Search path was $res $LUX_SEARCH_PATH"
+								lux_align_repos;
+							else
+							  fatal "Unable to find search path -> $res"
+							fi
 					fi
-				fi
+
+
+
 				return 0
 			else
 				return 1
@@ -39,11 +56,16 @@
 	}
 
 	function lux_need_align_repos(){
-		[ -z "$LUX_WWW" ] && return 0
-		[ -z "$LUX_CLI" ] && return 0
-		[ -z "$LUX_DEV" ] && return 0
-		[ -z "$LUX_CSS" ] && return 0
-		silly "dont need any repos!"
+		[ -z "$LUX_WWW"  ] && missing+=( "$LUX_WWW" ) || :
+		[ -z "$LUX_CLI"  ] && missing+=( "$LUX_CLI" ) || :
+		[ -z "$LUX_DEV"  ] && missing+=( "$LUX_DEV" ) || :
+		[ -z "$LUX_CSS"  ] && missing+=( "$LUX_CSS" ) || :
+		[ -z "$LUX_HOME" ] && missing+=( "$LUX_HOME" ) || :
+		len=${#missing[@]}
+
+		dump "${missing[@]}"
+		[ $len -gt 0 ] && return 0
+		silly "dont need any repos! $len"
 		return 1
 	}
 
@@ -68,7 +90,7 @@
 						lux-cli) LUX_CLI="$repo";;
 						lux-www) LUX_WWW="$repo";;
 						lux-dev) LUX_DEV="$repo";;
-						lux) LUX_CSS="$repo";;
+						lux) LUX_CSS="$repo"; LUX_HOME="$repo";;
 						*) silly "found ?? ($this)";;
 					esac
 				else
@@ -76,8 +98,6 @@
 				fi
 			done
 
-			#len=${#missing[@]}
-			#silly "$LUX_CLI $LUX_WWW $LUX_DEV $LUX_CSS"
 			dump "${missing[@]}"
 			lux_make_rc
 		else
@@ -176,6 +196,7 @@
 			### lux generated config file $(date)
 
 			export LUX_HOME="$LUX_HOME"
+			export LUX_DEV_BIN="$LUX_DEV_BIN"
 			export LUX_BIN="$LUX_BIN"
 			export LUX_RC="$LUX_RC"
 			export LUX_INST=0
@@ -190,6 +211,10 @@
 
 			if [ -n "\$LUX_BIN" ]; then
 				[[ ! "\$PATH" =~ "\$LUX_BIN" ]] && export PATH=\$PATH:\$LUX_BIN;
+			else
+				if [ -n "\$LUX_DEV_BIN" ]; then
+					[[ ! "\$PATH" =~ "\$LUX_DEV_BIN" ]] && export PATH=\$PATH:\$LUX_DEV_BIN;
+				fi
 			fi
 
 			alias luxcd="cd \$LUX_HOME; ls -la; [ -t 1 ] && printf \"\n${blue}${lambda}Lux directory.${x}\n\"||:"
@@ -207,5 +232,10 @@
 		src="${LUX_RC}"
 		rc_str="$(lux_rc_str)"
 		echo "$rc_str" > ${src}
-		[ -n "$1" ] && echo $line${nl} && cat "$LUX_RC" || :
+		[ -n "$1" ] && lux_dump_rc || :
+	}
+
+	function lux_dump_rc(){
+		echo $line${nl}
+		cat "$LUX_RC"
 	}

@@ -1,0 +1,176 @@
+#!/usr/bin/env bash
+#-------------------------------------------------------------------------------
+#===============================================================================
+##     Lux CLI  > lux watch 2 > lux.out  2>&1
+##       __
+##       \ \
+##        \ \
+##         > \
+##        / ^ \
+##       /_/ \_\
+##
+##  QodeParty (c) 2018
+#===============================================================================
+
+
+#-----------------------------------------------------------
+# Script
+#-----------------------------------------------------------
+	readonly script_pid=$$
+	readonly script_author="qodeparty"
+	readonly script_id="lux"
+	readonly script_prefix="LUX"
+	readonly script_rc_file=".luxrc"
+	readonly script_log_file="$script_id.log"
+	readonly script_lic="MIT License"
+
+
+#-------------------------------------------------------------------------------
+# Common Vars
+#-------------------------------------------------------------------------------
+
+	CPID="$$"
+
+	BIN_DIR="$( cd "$(dirname "$0")" || exit; pwd)"
+	THIS_DIR="$( cd $BIN_DIR && cd .. || exit; pwd)"
+
+	opt_verbose=0
+
+	missing=()
+	__repo_list=( )
+	__alias_list=( )
+
+
+
+#-------------------------------------------------------------------------------
+# INCLUDES
+#-------------------------------------------------------------------------------
+
+	source $BIN_DIR/inc-vars.sh
+
+	source $BIN_DIR/inc-term.sh "${@}"
+
+	source $BIN_DIR/inc-doc.sh
+
+	source $BIN_DIR/inc-utils.sh
+
+	source $BIN_DIR/inc-filetools.sh
+
+	source $BIN_DIR/inc-meta.sh
+
+	source $BIN_DIR/inc-checkup.sh
+
+
+#-------------------------------------------------------------------------------
+# Main
+#-------------------------------------------------------------------------------
+
+
+	function lux_pre_config(){
+		if is_error STATE_DBIN_PATH; then
+			warn "Please run config again!"
+			#fatal requires user step
+		else
+			pass "found DEV_BIN"
+		fi
+	}
+
+
+	function lux_pre_config_cli(){
+		if is_error STATE_LUX_CLI_DEF; then
+
+			if [ -n "$LUX_CONFIG_HOME" ]; then
+				LUX_CLI="$LUX_CONFIG_HOME"
+				unstat STATE_LUX_CLI_DEF
+			fi
+
+		else
+			pass "found CLI_DEF"
+			#fatal requires user step
+		fi
+	}
+
+	function lux_pre_config_bash_prof(){
+		if is_error STATE_BASH_PROF_DEF; then
+			warn "Prompt User for PROFILE or RC"
+			#fatal requires user step
+		else
+			pass "found BASH_PROFILE"
+		fi
+	}
+
+	function lux_pre_config_lux_home(){
+		if is_error STATE_LUX_HOME_DEF; then
+
+			if [ -n "$LUX_CSS" ]; then
+				LUX_HOME="$LUX_CSS"
+				unstat STATE_LUX_HOME_DEF
+				unstat STATE_LUX_BUILD_DEF
+				unstat STATE_LUX_DIST_DEF
+				lux_make_rc #need to update it
+				pass "Generated LUX Home $LUX_HOME"
+			else
+				warn "Prompt User for LUX Home..."
+				check_rc_repos
+			fi
+			#fatal requires user step
+		else
+			pass "found LUX Home"
+		fi
+	}
+
+	function lux_pre_config_rc_file(){
+		if is_error STATE_LUX_RC_FILE; then
+			warn "RC Files requires PROFILE"
+
+			#Do you want to make RC FIle?
+			lux_make_rc 1
+			#fatal requires user step
+		else
+			pass "found LUX_RC"
+		fi
+	}
+
+#-------------------------------------------------------------------------------
+# Dispatch
+#-------------------------------------------------------------------------------
+
+	source $BIN_DIR/inc-dispatch.sh
+
+#-------------------------------------------------------------------------------
+# Main
+#-------------------------------------------------------------------------------
+
+	function lux_checkup(){
+
+		check_setup
+		lux_repair
+		check_setup
+
+		#profile_unlink
+	}
+
+	function lux_repair(){
+		lux_pre_config
+		lux_pre_config_cli
+		lux_pre_config_bash_prof
+		lux_pre_config_lux_home
+		lux_pre_config_rc_file
+	}
+
+	function main(){
+		[ -f "$LUX_RC" ] && source $LUX_RC || warn "Cant find Lux RC"
+		dispatch "$@"
+	}
+
+#-------------------------------------------------------------------------------
+# Driver
+#-------------------------------------------------------------------------------
+if [ "$0" = "-bash" ]; then
+	:
+else
+
+	args=("${@}")
+
+	main "${args[@]}";ret=$?
+fi

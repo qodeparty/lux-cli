@@ -61,44 +61,58 @@
 	function lux_vars(){
 		local data b w g p y s t n;
 		b=$blue;w=$wz;g=$grey2;p=$cyan;y=$orange;
-		s=$sp;t=$tab;n=$nl;
-		lux_var_refresh
+		s=$sp;s2=$sp$sp;t=$tab;n=$nl;
+		#lux_var_refresh
+
 		data="$(cat <<-EOF
 			$line
-			${s}${yellow}$script_id $script_vers build:$(lux_build_version 'build') www:$(lux_build_version 'www')
 
-			${s}${b}USR_CONF   = ${yellow}${LUX_USER_CONF//$THIS_ROOT/.}
 
-			${s}${b}LUX_SEARCH_PATH = ${w}$LUX_SEARCH_PATH
+			${s2}${b}USR_CONF   = ${yellow}${LUX_USER_CONF//$THIS_ROOT/.}
 
-			${s}${b}LUX_ID     = ${w}$LUX_ID
-			${s}${b}LUX_RC     = ${w}$LUX_RC
-			${s}${b}LUX_HOME   = ${w}${LUX_HOME//$LUX_HOME/.}
-			${s}${b}LUX_BIN    = ${w}${LUX_BIN//$LUX_HOME/.}
+			${s2}${b}LUX_ID     = ${w}$LUX_ID
+			${s2}${b}LUX_RC     = ${w}$LUX_RC
 
-			${s}${b}LUX_CORE   = ${w}${LUX_CORE//$LUX_HOME/.}
-			${s}${b}LUX_VARS   = ${w}${LUX_VARS//$LUX_HOME/.}
-			${s}${b}LUX_UTIL   = ${w}${LUX_UTIL//$LUX_HOME/.}
-			${s}${b}LUX_DIST   = ${w}${LUX_DIST//$LUX_HOME/.}
-			${s}${b}LUX_BUILD  = ${w}${LUX_BUILD//$LUX_HOME/.}
+			${s2}${p}THIS_ROOT  = ${w}$THIS_ROOT
+			${s2}${p}THIS_DIR   = ${w}$THIS_DIR
+			${s2}${p}BIN_DIR    = ${w}$BIN_DIR
 
-			${s}${b}LUX_RES    = ${w}${LUX_RES//$LUX_HOME/.}
-			${s}${b}LUX_RBUILD = ${w}${LUX_RBUILD//$LUX_HOME/.}
+			${s2}${b}LUX_MODS   = ${y}${LUX_MODS[*]}${x}
 
-			${s}${b}LUX_LIB    = ${w}${LUX_LIB//$LUX_HOME/.}
-			${s}${b}LUX_EXT    = ${w}${LUX_EXT//$LUX_HOME/.}
-			${s}${b}LUX_DEFS   = ${w}${LUX_DEFS//$LUX_HOME/.}
+			${s}---------------------------------
+			${s}Repos
 
-			${s}${p}THIS_ROOT  = ${w}$THIS_ROOT
-			${s}${p}THIS_DIR   = ${w}$THIS_DIR
-			${s}${p}BIN_DIR    = ${w}$BIN_DIR
+			${s2}${b}LUX_SEARCH_PATH = ${w}$LUX_SEARCH_PATH
 
-			${s}${b}LUX_MODS   = ${y}${LUX_MODS[*]}
-			${s}${b}LUX_WWW    = ${y}$LUX_WWW
+			${s2}${b}LUX_WWW    = ${y}$LUX_WWW
+			${s2}${b}LUX_CLI    = ${y}$LUX_CLI
+			${s2}${b}LUX_DEV    = ${y}$LUX_DEV
+			${s2}${b}LUX_CSS    = ${y}$LUX_CSS${x}
 
-			${s}${b}LUX_CLI    = ${y}$LUX_CLI
-			${s}${b}LUX_DEV    = ${y}$LUX_DEV
-			${s}${b}LUX_CSS    = ${y}$LUX_CSS
+			${s}---------------------------------
+			${s}Main
+
+			${s2}${b}LUX_HOME   = ${w}${LUX_HOME}
+
+			${s}---------------------------------
+			${s}Derived
+
+			${s2}${b}LUX_BIN    = ${w}${LUX_BIN//$LUX_HOME/.}
+
+			${s2}${b}LUX_CORE   = ${w}${LUX_CORE//$LUX_HOME/.}
+			${s2}${b}LUX_VARS   = ${w}${LUX_VARS//$LUX_HOME/.}
+			${s2}${b}LUX_UTIL   = ${w}${LUX_UTIL//$LUX_HOME/.}
+			${s2}${b}LUX_DIST   = ${w}${LUX_DIST//$LUX_HOME/.}
+			${s2}${b}LUX_BUILD  = ${w}${LUX_BUILD//$LUX_HOME/.}
+
+			${s2}${b}LUX_RES    = ${w}${LUX_RES//$LUX_HOME/.}
+			${s2}${b}LUX_RBUILD = ${w}${LUX_RBUILD//$LUX_HOME/.}
+
+			${s2}${b}LUX_LIB    = ${w}${LUX_LIB//$LUX_HOME/.}
+			${s2}${b}LUX_EXT    = ${w}${LUX_EXT//$LUX_HOME/.}
+			${s2}${b}LUX_DEFS   = ${w}${LUX_DEFS//$LUX_HOME/.}
+
+			${s}#--------------------------------
 
 			${x}
 			$line
@@ -107,3 +121,6 @@
 
 		__print "$data"
 	}
+
+
+	#			${s}${yellow}$script_id $script_vers build:$(lux_build_version 'build') www:$(lux_build_version 'www')
