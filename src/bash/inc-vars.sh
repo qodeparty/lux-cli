@@ -4,14 +4,14 @@
 	LUX_RC="$HOME/.luxrc"
 
 	#HOME from CLI Perspective doesnt exist until its found or specified
+	LUX_ID="$script_id"
 	LUX_HOME= #${LUX_HOME:-$THIS_DIR}
-
-	#printf "1 $LUX_HOME"
 
 	LUX_DEV_BIN="$BIN_DIR"
 	LUX_BIN=
 
-	LUX_ID="$script_id"
+	#----------------------------------------------
+
 
 	LUX_SEARCH_PATH=
 
@@ -22,22 +22,36 @@
 
 	LUX_META_JS="$LUX_RES/js/lux-meta.js"
 
-	#LUX_HELPER_JS="$LUX_RES/js/lux-helper.js"
+	#----------------------------------------------
+
 
 	LUX_MODS=
 	LUX_CLI_VARS=( "build:$script_build" "vers:$script_vers" )
 	LUX_USER_CONF=
 
+  #----------------------------------------------
+
 
 	BASH_RC="$HOME/.bashrc"
 	[ -f "$HOME/.profile" ] && BASH_PROFILE="$HOME/.profile" || BASH_PROFILE="$HOME/.bash_profile"
 
+	#----------------------------------------------
+
+	#Install Paths
+	BASH_USR_BIN= #"$HOME/bin"
+
+	#TODO:replace with function call?
+	if [ -n "$BASH_USR_BIN" ]; then
+		QODEPARTY_INSTALL_DIR="$BASH_USR_BIN/qodeparty"
+		LUX_INSTALL_DIR="$QODEPARTY_INSTALL_DIR/lux"
+	fi
+	#----------------------------------------------
 
 	#Now load RC to generate sub vars
-
 	[ -f "$LUX_RC" ] && source $LUX_RC || : # printf "Cant find Lux RC"
 
-	#printf "2 $LUX_HOME"
+  #----------------------------------------------
+
 
 	if [ -n "$LUX_HOME" ]; then
 
@@ -65,4 +79,5 @@
 		: #printf "Lux home not defined $LUX_HOME \n"
 	fi
 
+  #----------------------------------------------
 

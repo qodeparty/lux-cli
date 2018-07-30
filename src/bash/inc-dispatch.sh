@@ -24,7 +24,7 @@
 			fi
 			case $call in
 				makebin)
-					makebin "$1" "$2"
+					makebin "$1" "nocomments"
 					info "$1 $2"
 					shift;
 					break;

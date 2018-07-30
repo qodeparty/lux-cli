@@ -9,37 +9,18 @@
 				#reset_user_data
 				  sleep 0.2
 					#clear
-
-					while [[ -z "$next" ]]; do
-						read -p "Where shoud Lux search for Repos? > ${bld}${green}" SEARCH_PATH
-						res=$(eval echo $SEARCH_PATH)
-						if [ -n "$res" ]; then
-							if confirm "${x}Search for Lux repos in [ ${blue}$res${x} ] (y/n)? > "; then
-
-								if [ ! -d $res ]; then
-									warn "Couldn't find the directory at [ ${blue}$res${x} ]! Try Again."
-								else
-									next=1
-								fi
-
-							fi
-						else
-							warn "Invalid Entry! Try Again."
-						fi
-					done
+					res=$(prompt_path "Where shoud Lux search for Repos" "Search for Lux repos in")
 
 					lux_need_align_repos;ret=$?
 
-					#info "Return RC REPOS $ret"
-
 					if [ $ret -eq 0 ]; then
-
-							if [ -d $res ]; then
-								success "Found search path $res" "$ret"
+							if [ -d "$res" ]; then
+								pass "Found search path $res" #"$ret"
 								lux_find_repos "$res"; ret=$?
 								[ $ret -eq 0 ] && LUX_SEARCH_PATH="$res" || :
 								#silly "Search path was $res $LUX_SEARCH_PATH"
 								lux_align_repos;
+
 							else
 							  fatal "Unable to find search path -> $res"
 							fi
@@ -221,6 +202,10 @@
 			__repo_list=(${__repo_list[*]})
 			__alias_list=(${__alias_list[*]})
 
+			if [ -n "\$BASH_USR_BIN" ]; then
+				[[ ! "\$PATH" =~ "\$BASH_USR_BIN" ]]  && export PATH=\$PATH:\$BASH_USR_BIN;
+			fi
+
 			if [ -n "\$LUX_BIN" ]; then
 				[[ ! "\$PATH" =~ "\$LUX_BIN" ]] && export PATH=\$PATH:\$LUX_BIN;
 			else
@@ -246,7 +231,8 @@
 		echo "$rc_str" > ${src}
 		[ -n "$1" ] && lux_dump_rc || :
 		#clear any error related to this missing
-		unstat STATE_LUX_RC_FILE
+		unstat STATE_LUX_RC_FILE #kind of wantt his in the inc-checkup. not sure
+		[ -f "${src}" ] && return 0 || return 1;
 	}
 
 	function lux_dump_rc(){

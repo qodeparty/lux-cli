@@ -68,6 +68,7 @@
 		echo "${array[*]}"
 	}
 
+	#rem values need +-? prefixes
 	function upd_array(){
 		local val="$1"; shift;
 		local list=($@)
@@ -136,6 +137,7 @@
 
 	function search_replace_bash(){
 		target="$1"
+		no_comments="$2"
 		res=($(grep -E '^[[:space:]]*include' $target -n | awk '{print $1 $3}'))
 		lines=()
 		files=()
@@ -172,19 +174,30 @@
 			data="$bline\n## import file:${name%%\.sh*} ##\n$bline"
 
 			sed -i.bak -e "s|.*${qref}.*|${data}|i" $tmp_target
-			qref=$(quoteRe "#!")
+
 
 			#remore leading shebang after line 15
-			sed -i.bak -e "15,\${ /^${qref}.*/d }" "$tmp_target"
+			if [ -z "$no_comments" ]; then
+				qref=$(quoteRe "#!")
+			else
+				qref=$(quoteRe "#")
+				qref="^[[:space:]]*${qref}[^#]"
+			fi
+
+			#info "$qref"
+			sed -i.bak -e "15,\${ /${qref}/d }" "$tmp_target"
 
 		done
+
+		#lookahead dont work in sed
+		# s|(?=[[:print:]]+)[[:space:]]*[#].*||i
+		#sed -i.bak -e "15,\${ s/[[:space:]][^\W#]*[#][^#|\n]+.*//i }" "$tmp_target"
+		sed -i.bak "/^$/d" "$tmp_target"
 		echo "$tmp_target"
 	}
 
 	function makebin(){
-		target="$1"
-		dest="$2"
-		tmp_file=$(search_replace_bash "$@")
+		tmp_file=$(search_replace_bash "$1" "$2")
 		silly "$THIS_ROOT"
 		mv "$tmp_file" "./luxbin"
 		[ -f "$tmp_file.bak" ] && rm "$tmp_file.bak"

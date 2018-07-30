@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-#-------------------------------------------------------------------------------
-#===============================================================================
+##------------------------------------------------------------------------------
+##==============================================================================
 
     red=$(tput setaf 1)
     red2=$(tput setaf 9)
@@ -95,6 +95,13 @@
       [ $opt_quiet -eq 1 ] && [ -n "$text" ] && printf "${prefix}${!color}%b${x}\n" "${text}" 1>&2 || :
     }
 
+    function __printf(){
+      local text color prefix
+      text=${1:-}; color=${2:-grey}; prefix=${!3:-};
+      [ $opt_quiet -eq 1 ] && [ -n "$text" ] && printf "${prefix}${!color}%b${x}" "${text}" 1>&2 || :
+    }
+
+
     function    info(){ local text=${1:-}; [ $opt_verbose -eq 0 ] && __print "$lambda$text" "blue"; }
     function   silly(){ local text=${1:-}; [ $opt_silly   -eq 0 ] && __print "$dots$text" "purple"; }
     function   trace(){ local text=${1:-}; [ $opt_verbose -eq 0 ] && __print "$text"   "grey2"; }
@@ -116,17 +123,41 @@
 
   function confirm() {
     local ret;ret=1
-    printf "${1:-Are you sure ?}"
+    __printf "${1}" "white" #:-Are you sure ?
     while read -r -n 1 -s answer; do
+      #info "try answer..."
       if [[ $answer = [YyNn10tf+\-q] ]]; then
-        [[ $answer = [Yyt1+] ]] && printf "${bld}${green}yes${x}" && ret=0 || :
-        [[ $answer = [Nnf0\-] ]] && printf "${bld}${red}no${x}" && ret=1 || :
-        [[ $answer = [q] ]] && printf "\n" && exit 1 || :
+        [[ $answer = [Yyt1+] ]] && __printf "${bld}${green}yes${x}" && ret=0 || :
+        [[ $answer = [Nnf0\-] ]] && __printf "${bld}${red}no${x}" && ret=1 || :
+        [[ $answer = [q] ]] && __printf "\n" && exit 1 || :
         break
       fi
     done
-    printf "\n"
+    __printf "\n"
     return $ret
+  }
+
+
+  function prompt_path(){
+    local res ret next
+    prompt="$1"
+    prompt_sure="$2"
+    while [[ -z "$next" ]]; do
+      read -p "$prompt? > ${bld}${green}" __NEXT_DIR
+      res=$(eval echo $__NEXT_DIR)
+      if [ -n "$res" ]; then
+        if confirm "${x}${prompt_sure} [ ${blue}$res${x} ] (y/n)? >"; then
+          if [ ! -d "$res" ]; then
+            warn "Couldn't find the directory at [ ${blue}$res${x} ]! Try Again."
+          else
+            next=1
+          fi
+        fi
+      else
+        warn "Invalid Entry! Try Again."
+      fi
+    done
+    echo "$res"
   }
 
 
@@ -138,11 +169,13 @@
       handle_input
       for i in ${!arr[@]}; do
         this="${arr[$i]}"
-        [ -n "$this" ] && printf "$flag$opt_dump_col$dots(%02d of %02d) $this $x$newl" "$i" "$len"
+        [ -n "$this" ] && printf -v "out" "$flag$opt_dump_col$dots(%02d of %02d) $this $x" "$i" "$len"
+        trace "$out"
         sleep 0.1
       done
       cleanup
-      printf "$flag$green$pass (%02d of %02d) Read. $x$eol\n" "$len" "$len"
+      printf -v "out" "$flag$green$pass (%02d of %02d) Read. $x$eol" "$len" "$len"
+      trace "$out"
     fi
   }
 
