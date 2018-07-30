@@ -136,35 +136,40 @@
 
 	function search_replace_bash(){
 		target="$1"
-		res=($(grep 'source' $target -n | awk '{print $1 $3}'))
+		res=($(grep -E '^[[:space:]]*include' $target -n | awk '{print $1 $3}'))
 		lines=()
 		files=()
+		real=()
 
 		tmp_target="${target}.copy"
 
 		cp "$target" "$tmp_target"
 
+		#first pass split up lines into buckets cuz im neurotic
 		for i in ${!res[@]}; do
 			this=${res[$i]}
 			file_ref=${this##*:}
 			line_no=${this%%:*}
-			lines+=($line_no)
-			files+=($file_ref)
+			lines+=("$line_no")
+			files+=("$file_ref")
+			real_file=$(eval echo "$file_ref")
+			real+=("$real_file")
 		done
 
+		#second pass actualize paths and inject file content
 		for i in ${!lines[@]}; do
 			this=${lines[$i]}
 			ref=${files[$i]}
-			info "Trying to replace line $ref at $this"
-			qref=$(quoteRe "source $ref")
+			val=${real[$i]}
 
-			info "$ref $qref"
-			insert_wh_replace "$ref" "$tmp_target" "$qref"
+			qref=$(quoteRe "include $ref")
+
+			#info "$ref $qref"
+			insert_wh_replace "$val" "$tmp_target" "$qref"
 
 			#sed -i.bak -e "/${qref}/d" "$target" #delete line number
 			name=$(basename $ref)
 			data="$bline\n## import file:${name%%\.sh*} ##\n$bline"
-			#qdata=$(quoteRe "$data")
 
 			sed -i.bak -e "s|.*${qref}.*|${data}|i" $tmp_target
 			qref=$(quoteRe "#!")
@@ -182,4 +187,5 @@
 		tmp_file=$(search_replace_bash "$@")
 		silly "$THIS_ROOT"
 		mv "$tmp_file" "./luxbin"
+		[ -f "$tmp_file.bak" ] && rm "$tmp_file.bak"
 	}

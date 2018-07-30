@@ -1,23 +1,4 @@
 #!/usr/bin/env bash
-	# function file_replace_line() {
-	# 	local match_line="${1}"
-	# 	local data="${2}"
-	# 	local src="${3}"
-	# 	local ret=
-	# 	found=$(file_perl_match "$match_line" $src)
-	# 	if [ -n "$found" ]; then
-	# 		sed -i.bak "s|.*${match_line}.*|${data}|gi" $src
-	# 		ret=$?
-	# 		rm -f "${src}.bak"
-	# 	else
-	# 		#add the line
-	# 		decho "$orange WARN not found ($match_line) adding line to ($src)"
-	# 		$(file_add_line "${data}" $src)
-	# 		ret=$?
-	# 	fi
-	# 	return $ret
-	# }
-
 
 
 	function find_dirs(){
@@ -28,8 +9,8 @@
 		find_cmd+=" -type d ! -path ."
 		awk_cmd="awk -F'.git' '{ sub (\"^./\", \"\", \$1); print \$1 }'"
 		cmd="$find_cmd | $awk_cmd"
-		__print "$cmd"
-		eval "$cmd"
+		#__print "$cmd"
+		eval "$cmd" #TODO:check if theres a better way to do this
 	}
 
 

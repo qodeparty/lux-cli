@@ -4,43 +4,46 @@
 		local res ret next
 
 		if [ -z "$LUX_SEARCH_PATH" ]; then
-			if confirm "[ ${delta}LUX SEARCH MISSING${x} ] Do you want to run repo finder (y/n)? > "; then
+			wtrace "Lux search path missing${x}"
+			if confirm "Do you want to run repo finder (y/n)? > "; then
 				#reset_user_data
 				  sleep 0.2
 					#clear
 
 					while [[ -z "$next" ]]; do
-						read -p "Where shoud Lux search for Repos? -> " SEARCH_PATH
+						read -p "Where shoud Lux search for Repos? > ${bld}${green}" SEARCH_PATH
 						res=$(eval echo $SEARCH_PATH)
-						if confirm "Search for Lux repos in [ ${blue}$res${x} ] (y/n)? > "; then
+						if [ -n "$res" ]; then
+							if confirm "${x}Search for Lux repos in [ ${blue}$res${x} ] (y/n)? > "; then
 
-							if [ ! -d $res ]; then
-								warn "Couldn't find the directory at [ ${blue}$res${x} ]! Try Again."
-							else
-								next=1
+								if [ ! -d $res ]; then
+									warn "Couldn't find the directory at [ ${blue}$res${x} ]! Try Again."
+								else
+									next=1
+								fi
+
 							fi
-
+						else
+							warn "Invalid Entry! Try Again."
 						fi
 					done
 
 					lux_need_align_repos;ret=$?
 
-					info "Return RC REPOS $ret"
+					#info "Return RC REPOS $ret"
 
 					if [ $ret -eq 0 ]; then
 
 							if [ -d $res ]; then
-								success "Found Search path $res" "$ret"
+								success "Found search path $res" "$ret"
 								lux_find_repos "$res"; ret=$?
 								[ $ret -eq 0 ] && LUX_SEARCH_PATH="$res" || :
-								silly "Search path was $res $LUX_SEARCH_PATH"
+								#silly "Search path was $res $LUX_SEARCH_PATH"
 								lux_align_repos;
 							else
 							  fatal "Unable to find search path -> $res"
 							fi
 					fi
-
-
 
 				return 0
 			else
@@ -68,6 +71,8 @@
 		silly "dont need any repos! $len"
 		return 1
 	}
+
+
 
 	function lux_align_repos(){
 		local this len buf arr want repo need
@@ -98,8 +103,15 @@
 				fi
 			done
 
+			if [ -d "$LUX_HOME" ]; then
+				lux_pre_config_set_home "$LUX_HOME"
+			else
+				wtrace "Cant find Lux Home"
+				lux_make_rc
+			fi
+
 			dump "${missing[@]}"
-			lux_make_rc
+
 		else
 			dump "${want[@]}"
 		fi
@@ -233,6 +245,8 @@
 		rc_str="$(lux_rc_str)"
 		echo "$rc_str" > ${src}
 		[ -n "$1" ] && lux_dump_rc || :
+		#clear any error related to this missing
+		unstat STATE_LUX_RC_FILE
 	}
 
 	function lux_dump_rc(){

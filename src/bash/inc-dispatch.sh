@@ -23,6 +23,12 @@
 				skip=1; continue
 			fi
 			case $call in
+				makebin)
+					makebin "$1" "$2"
+					info "$1 $2"
+					shift;
+					break;
+				;;
 				check)  lux_checkup;    ret=$?;;
 				link)   profile_link;   ret=$?;;
 				unlink) profile_unlink; ret=$?;;

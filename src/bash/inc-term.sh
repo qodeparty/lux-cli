@@ -42,14 +42,22 @@
     opt_quiet=1
     opt_force=1
     opt_verbose=1
+    opt_silly=1
     opt_debug=1
     opt_basis=
     opt_dump_col="$orange"
 
     [[ "${@}" =~ "--debug" ]] && opt_debug=0 || :
     [[ "${@}" =~ "--info"  ]] && opt_verbose=0 || :
+    [[ "${@}" =~ "--silly" ]] && opt_silly=0 || :
     [[ "${@}" =~ "--quiet" ]] && opt_quiet=0 || :
     [[ "${@}" =~ "--force" ]] && opt_force=0 || :
+
+
+    if [ $opt_quiet   -eq 1 ]; then
+       [ $opt_silly   -eq 0 ] && opt_verbose=0
+       [ $opt_verbose -eq 0 ] && opt_debug=0
+    fi
 
     __buf_list=1
 #-------------------------------------------------------------------------------
@@ -87,11 +95,12 @@
       [ $opt_quiet -eq 1 ] && [ -n "$text" ] && printf "${prefix}${!color}%b${x}\n" "${text}" 1>&2 || :
     }
 
-    function    info(){ local text=${1:-}; [ $opt_verbose -eq 0 ] || [ $opt_debug -eq 0 ]  && __print "$lambda$text" "blue"; }
-    function   silly(){ local text=${1:-}; [ $opt_verbose -eq 0 ] && __print "$dots$text" "purple"; }
-    function   trace(){ local text=${1:-}; [ $opt_verbose -eq 0 ] && __print "$text" "grey2"; }
-    function  ftrace(){ local text=${1:-}; [ $opt_verbose -eq 0 ] && __print " $text" "fail"; }
+    function    info(){ local text=${1:-}; [ $opt_verbose -eq 0 ] && __print "$lambda$text" "blue"; }
+    function   silly(){ local text=${1:-}; [ $opt_silly   -eq 0 ] && __print "$dots$text" "purple"; }
+    function   trace(){ local text=${1:-}; [ $opt_verbose -eq 0 ] && __print "$text"   "grey2"; }
+    function  ftrace(){ local text=${1:-}; [ $opt_verbose -eq 0 ] && __print " $text"   "fail"; }
     function  ptrace(){ local text=${1:-}; [ $opt_verbose -eq 0 ] && __print " $text$x" "pass"; }
+    function  wtrace(){ local text=${1:-}; [ $opt_verbose -eq 0 ] && __print " $text$x" "delta"; }
     function   error(){ local text=${1:-}; __print " $text" "fail"; }
     function    warn(){ local text=${1:-}; __print " $text$x" "delta";  }
     function    pass(){ local text=${1:-}; __print " $text$x" "pass"; }

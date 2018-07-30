@@ -24,7 +24,9 @@
 	readonly script_log_file="$script_id.log"
 	readonly script_lic="MIT License"
 
-
+	function include(){
+		source "${@}"
+	}
 #-------------------------------------------------------------------------------
 # Common Vars
 #-------------------------------------------------------------------------------
@@ -46,96 +48,27 @@
 # INCLUDES
 #-------------------------------------------------------------------------------
 
-	source $BIN_DIR/inc-vars.sh
+	include $BIN_DIR/inc-vars.sh
 
-	source $BIN_DIR/inc-term.sh "${@}"
+	include $BIN_DIR/inc-term.sh "${@}"
 
-	source $BIN_DIR/inc-doc.sh
+	include $BIN_DIR/inc-doc.sh
 
-	source $BIN_DIR/inc-utils.sh
+	include $BIN_DIR/inc-utils.sh
 
-	source $BIN_DIR/inc-filetools.sh
+	include $BIN_DIR/inc-filetools.sh
 
-	source $BIN_DIR/inc-meta.sh
+	include $BIN_DIR/inc-meta.sh
 
-	source $BIN_DIR/inc-checkup.sh
-
-
-#-------------------------------------------------------------------------------
-# Main
-#-------------------------------------------------------------------------------
+	include $BIN_DIR/inc-checkup.sh
 
 
-	function lux_pre_config(){
-		if is_error STATE_DBIN_PATH; then
-			warn "Please run config again!"
-			#fatal requires user step
-		else
-			pass "found DEV_BIN"
-		fi
-	}
-
-
-	function lux_pre_config_cli(){
-		if is_error STATE_LUX_CLI_DEF; then
-
-			if [ -n "$LUX_CONFIG_HOME" ]; then
-				LUX_CLI="$LUX_CONFIG_HOME"
-				unstat STATE_LUX_CLI_DEF
-			fi
-
-		else
-			pass "found CLI_DEF"
-			#fatal requires user step
-		fi
-	}
-
-	function lux_pre_config_bash_prof(){
-		if is_error STATE_BASH_PROF_DEF; then
-			warn "Prompt User for PROFILE or RC"
-			#fatal requires user step
-		else
-			pass "found BASH_PROFILE"
-		fi
-	}
-
-	function lux_pre_config_lux_home(){
-		if is_error STATE_LUX_HOME_DEF; then
-
-			if [ -n "$LUX_CSS" ]; then
-				LUX_HOME="$LUX_CSS"
-				unstat STATE_LUX_HOME_DEF
-				unstat STATE_LUX_BUILD_DEF
-				unstat STATE_LUX_DIST_DEF
-				lux_make_rc #need to update it
-				pass "Generated LUX Home $LUX_HOME"
-			else
-				warn "Prompt User for LUX Home..."
-				check_rc_repos
-			fi
-			#fatal requires user step
-		else
-			pass "found LUX Home"
-		fi
-	}
-
-	function lux_pre_config_rc_file(){
-		if is_error STATE_LUX_RC_FILE; then
-			warn "RC Files requires PROFILE"
-
-			#Do you want to make RC FIle?
-			lux_make_rc 1
-			#fatal requires user step
-		else
-			pass "found LUX_RC"
-		fi
-	}
 
 #-------------------------------------------------------------------------------
 # Dispatch
 #-------------------------------------------------------------------------------
 
-	source $BIN_DIR/inc-dispatch.sh
+	include $BIN_DIR/inc-dispatch.sh
 
 #-------------------------------------------------------------------------------
 # Main
@@ -145,12 +78,15 @@
 
 		check_setup
 		lux_repair
+
+
 		check_setup
 
 		#profile_unlink
 	}
 
 	function lux_repair(){
+		silly "Lux Repairing..."
 		lux_pre_config
 		lux_pre_config_cli
 		lux_pre_config_bash_prof
@@ -159,7 +95,7 @@
 	}
 
 	function main(){
-		[ -f "$LUX_RC" ] && source $LUX_RC || warn "Cant find Lux RC"
+		[ -f "$LUX_RC" ] && source $LUX_RC || wtrace "Cant find Lux RC"
 		dispatch "$@"
 	}
 
