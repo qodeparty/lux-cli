@@ -12,7 +12,7 @@
 		[ -z "$LUX_HOME" ] && missing+=( "$LUX_HOME" ) || :
 		len=${#missing[@]}
 
-		#dump "${missing[@]}"
+		dump "${missing[@]}"
 		[ $len -gt 0 ] && return 0
 		#silly "dont need any repos! $len"
 		return 1

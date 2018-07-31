@@ -91,7 +91,15 @@ function lux_full_repair(){
 	silly "Lux Repairing..."
 	lux_pre_config
 
-	lux_auto_repair
+	lux_pre_config_cli
+	lux_pre_config_bash_prof
+	#lux_pre_config_search_path
+	lux_pre_config_lux_home
+	lux_pre_config_set_homevars
+	#repair_home "$LUX_HOME" #only set with rc
+	lux_pre_config_rc_file
+	lux_pre_config_bin_dir
+	lux_pre_install
 
 	lux_make_rc
 
@@ -101,7 +109,7 @@ function lux_full_repair(){
 function lux_auto_repair(){
 	lux_pre_config_cli
 	lux_pre_config_bash_prof
-	lux_pre_config_search_path
+	#lux_pre_config_search_path
 	lux_pre_config_lux_home
 	lux_pre_config_set_homevars
 	#repair_home "$LUX_HOME" #only set with rc
