@@ -2,7 +2,8 @@
 
 
 	function find_dirs(){
-		__print "${purple}Finding repo folders! This may take a minute... $2 $x"
+		info "Finding repo folders..."
+		warn "This may take a minute depending..."
 		find_cmd="find ${2:-.} -mindepth 1"
 		[[ $1 =~ "1"   ]] && find_cmd+=" -maxdepth 2" || :
 		[[ $1 =~ git ]] && find_cmd+=" -name .git"  || :

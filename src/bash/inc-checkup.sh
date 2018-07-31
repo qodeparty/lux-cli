@@ -15,7 +15,6 @@
 #-------------------------------------------------------------------------------
 
 function is_error(){
-
 	[ -z "$1" ] && return 1 || :
 	res=$(in_array "$1" "${status_err[@]}");ret=$?
 	#info "iserror ($1) ($ret) [${status_err[*]}]?"
@@ -25,88 +24,9 @@ function is_error(){
 function unstat(){
 	local val="-$1"; shift;
 	local list=(${status_err[@]})
-	wtrace "Unsetting status [$val]"
+	#wtrace "Unsetting status [$val]"
 	val=$(upd_array "$val" "${list[@]}")
 	status_err=($val)
-
-	# opt_dump_col="$red2"
-	# dump "${status_err[@]}"
-}
-
-
-#-------------------------------------------------------------------------------
-# STATES
-#-------------------------------------------------------------------------------
-
-	function __env_repair(){
-		trace "---env_repair"
-		local arr=(${@})
-		local len=${#arr[@]}
-		if [ $len -gt 0 ]; then
-			for i in ${!arr[@]}; do
-				local this="${arr[$i]}"
-				#check if function exists
-				declare -F "${!this}" &> /dev/null
-				ret=$?
-				if [ $ret -eq 0 ]; then
-					${!this};
-					ret=$?
-					sleep .02
-					log "$(res $ret) Fixed ($this)?"
-				else
-				 log "$(res $ret) No FX for ($this)"
-				fi
-			done
-		fi
-		return 0
-	}
-
-
-
-function lux_full_repair(){
-	lux_checkup
-	silly "Lux Repairing..."
-	lux_pre_config
-	lux_pre_config_cli
-	lux_pre_config_bash_prof
-
-	lux_pre_config_lux_home
-	lux_pre_config_set_home "$LUX_HOME" #only set with rc
-	#lux_make_rc
-
-	lux_pre_config_rc_file #attempt to make rc file if it doesnt exist
-	lux_pre_config_bin_dir
-	lux_pre_install
-	lux_make_rc
-}
-
-
-function lux_auto_repair(){
-	lux_pre_config_cli
-	lux_pre_config_lux_home
-	lux_pre_config_set_home "$LUX_HOME" #only set with rc
-	lux_pre_config_rc_file
-	lux_pre_config_bin_dir
-}
-
-#STATE_LUX_PRE_SETUP
-
-function lux_checkup(){
-
-	silly "Check Setup!"
-
-	unset status_err
-	unset err_vals
-
-	unset status_pass
-	unset pass_vals
-
-	#check if this dir is in PATH
-	#echo $BIN_DIR $THIS_DIR
-
-	#lux_auto_repair
-	check_each_state
-	#dump_results
 }
 
 function dump_results(){
@@ -126,7 +46,81 @@ function dump_results(){
 
 	opt_dump_col="$cyan"
 	dump "${pass_vals[@]}"
+}
 
+
+#-------------------------------------------------------------------------------
+# STATE UTILS
+#-------------------------------------------------------------------------------
+
+function __env_repair(){
+	trace "---env_repair"
+	local arr=(${@})
+	local len=${#arr[@]}
+	if [ $len -gt 0 ]; then
+		for i in ${!arr[@]}; do
+			local this="${arr[$i]}"
+			#check if function exists
+			declare -F "${!this}" &> /dev/null
+			ret=$?
+			if [ $ret -eq 0 ]; then
+				${!this};
+				ret=$?
+				sleep .02
+				log "$(res $ret) Fixed ($this)?"
+			else
+			 log "$(res $ret) No FX for ($this)"
+			fi
+		done
+	fi
+	return 0
+}
+
+#-------------------------------------------------------------------------------
+# CHECKUPS
+#-------------------------------------------------------------------------------
+
+function lux_full_repair(){
+	lux_checkup
+	silly "Lux Repairing..."
+	lux_pre_config
+	lux_pre_config_cli
+	lux_pre_config_bash_prof
+
+	lux_pre_config_lux_home
+	#repair_home "$LUX_HOME" #only set with rc
+	#lux_make_rc
+
+	lux_pre_config_rc_file #attempt to make rc file if it doesnt exist
+	lux_pre_config_bin_dir
+	lux_pre_install
+	lux_make_rc
+}
+
+function lux_auto_repair(){
+	lux_pre_config_cli
+	lux_pre_config_lux_home
+	#repair_home "$LUX_HOME" #only set with rc
+	lux_pre_config_rc_file
+	lux_pre_config_bin_dir
+}
+
+function lux_checkup(){
+
+	silly "Check Setup!"
+
+	unset status_err
+	unset err_vals
+
+	unset status_pass
+	unset pass_vals
+
+	#check if this dir is in PATH
+	#echo $BIN_DIR $THIS_DIR
+
+	#lux_auto_repair
+	check_each_state
+	#dump_results
 }
 
 function check_each_state(){
@@ -168,11 +162,8 @@ function check_each_state(){
 	assert_defined  LUX_INSTALL_DIR  STATE_LUX_INST_DEF ;
 	assert_writable LUX_INSTALL_DIR  STATE_LUX_INST_WRITE;
 	#LUX_CLI_INSALL_PATH
-
-
 }
 
-#STATE_DBIN_UNDEF="lux_pre_config"
 
 #-------------------------------------------------------------------------------
 # ASSERTIONS
@@ -195,13 +186,11 @@ function assert_defined(){
 	return $ret
 }
 
-
 function assert_file(){
 	local ret this; this=${!1};
 	[ ! -f "$this" ] && ret=1 || ret=0; record_assertion $ret "$1" "$2" true
 	return $ret
 }
-
 
 function assert_dir(){
 	local ret this; this=${!1};
@@ -239,7 +228,6 @@ function assert_writable(){
 	return $ret
 }
 
-
 function assert_infile(){
 	local this=$1
 	:
@@ -265,6 +253,78 @@ function assert_ready(){
 
 #STATE_LUX_UNINSTALL
 
+
+#-------------------------------------------------------------------------------
+# PROMPTS
+#-------------------------------------------------------------------------------
+
+
+	function repair_home(){
+		LUX_HOME="$1"
+		lux_pre_config_set_homevars
+		[ -d "$LUX_HOME" ] && unstat STATE_LUX_HOME_DEF || :
+		ptrace "Repaired LUX Home ($LUX_HOME)"
+	}
+
+	function repair_binvars(){
+		trace "try Resolve STATE_BASH_UBIN_DEF-(Sub Dirs)"
+		BASH_USR_BIN="$1"
+		if [ -n "$BASH_USR_BIN" ]; then
+			QODEPARTY_INSTALL_DIR="$BASH_USR_BIN/qodeparty"
+			LUX_INSTALL_DIR="$QODEPARTY_INSTALL_DIR/lux"
+		else
+			: #printf "Lux home not defined $LUX_HOME \n"
+		fi
+		ptrace "Repaired Bin Vars ($BASH_USR_BIN)"
+	}
+
+
+	function prompt_home(){
+		if confirm "${lambda} ${blue}LUX_HOME$x is not set. Set the location manually (y/n)"; then
+			res=$(prompt_path "Where is \${blue}LUX_HOME\$x directory on \$blue\$HOSTNAME\$x" "Is this correct" "$LUX_HOME");ret=$?
+			#[ $ret -eq 1 ] && return 1;
+		else
+			:
+		fi
+	}
+
+
+	function prompt_repos(){
+		local res ret next
+		if [ -z "$LUX_SEARCH_PATH" ]; then
+			wtrace "Lux search path missing${x}"
+
+			if confirm "${x}Do you want to run repo finder (y/n)"; then
+				#reset_user_data
+				  sleep 0.2
+					#clear
+					res=$(prompt_path "Where should Lux search for Repos ex: \$blue\$default\$x" "Search for Lux repos in" "$HOME/src");ret=$?
+					[ $ret -eq 1 ] && return 1;
+
+					lux_need_align_repos;ret=$?
+
+					if [ $ret -eq 0 ]; then
+							if [ -d "$res" ]; then
+								pass "Found search path $res" #"$ret"
+								lux_find_repos "$res"; ret=$?
+								[ $ret -eq 0 ] && LUX_SEARCH_PATH="$res" || :
+								#silly "Search path was $res $LUX_SEARCH_PATH"
+								lux_align_repos;
+
+							else
+							  fatal "Unable to find search path -> $res"
+							fi
+					fi
+
+				return 0
+			else
+				return 1
+			fi
+		fi
+		return 0
+	}
+
+
 #-------------------------------------------------------------------------------
 # REPAIR
 #-------------------------------------------------------------------------------
@@ -276,7 +336,7 @@ function assert_ready(){
 			warn "Please run config again!"
 			#fatal requires user step
 		else
-			ptrace "found DEV_BIN"
+			: #pptrace "found DEV_BIN"
 		fi
 	}
 
@@ -291,7 +351,7 @@ function assert_ready(){
 			fi
 
 		else
-			ptrace "found CLI_DEF ($LUX_CONFIG_HOME)"
+			: #pptrace "found CLI_DEF ($LUX_CONFIG_HOME)"
 			#fatal requires user step
 		fi
 	}
@@ -302,9 +362,11 @@ function assert_ready(){
 			warn "Prompt User for PROFILE or RC"
 			#fatal requires user step
 		else
-			ptrace "found BASH_PROFILE ($BASH_PROFILE)"
+			: #pptrace "found BASH_PROFILE ($BASH_PROFILE)"
 		fi
 	}
+
+
 
 	function lux_pre_config_lux_home(){
 		trace "try Resolve STATE_LUX_HOME_DEF"
@@ -313,12 +375,20 @@ function assert_ready(){
 
 			if [ -n "$LUX_CSS" ]; then
 				LUX_HOME="$LUX_CSS"
-				lux_pre_config_set_home "$LUX_HOME"
+
 			else
 
 				if [ $opt_skip_input -eq 1 ]; then
 					#REQUIRES USER INPUT
-					check_rc_repos "$LUX_HOME";ret=$?
+					prompt_repos "$LUX_HOME";ret=$?
+
+					if [ -d "$LUX_HOME" ]; then
+						repair_home "$LUX_HOME"
+					else
+						wtrace "Cant find Lux Home"
+						lux_make_rc
+					fi
+
 					[ $ret -eq 0 ] && unstat STATE_LUX_SRC_DEF || :
 				else
 					:
@@ -326,6 +396,11 @@ function assert_ready(){
 				fi
 
 			fi
+
+			if [ -n "$LUX_HOME" ]; then
+				repair_home "$LUX_HOME"
+			fi
+
 			#fatal requires user step
 		else
 			ptrace "found LUX Home ($LUX_HOME)"
@@ -340,18 +415,11 @@ function assert_ready(){
 			lux_make_rc 1
 			#fatal requires user step
 		else
-			ptrace "found LUX_RC"
+			: #pptrace "found LUX_RC"
 		fi
 	}
 
 
-	function lux_pre_config_set_home(){
-		LUX_HOME="$1"
-		lux_pre_config_set_homevars
-
-		[ -d "$LUX_HOME" ] && unstat STATE_LUX_HOME_DEF || :
-		ptrace "Generated LUX Home ($LUX_HOME)"
-	}
 
 
 
@@ -387,20 +455,8 @@ function assert_ready(){
 		else
 			: #printf "Lux home not defined $LUX_HOME \n"
 		fi
-
 	}
 
-	function lux_pre_config_set_binvars(){
-		trace "try Resolve STATE_BASH_UBIN_DEF-(Sub Dirs)"
-		BASH_USR_BIN="$1"
-		if [ -n "$BASH_USR_BIN" ]; then
-			QODEPARTY_INSTALL_DIR="$BASH_USR_BIN/qodeparty"
-			LUX_INSTALL_DIR="$QODEPARTY_INSTALL_DIR/lux"
-		else
-			: #printf "Lux home not defined $LUX_HOME \n"
-		fi
-		ptrace "Generated Bin User Vars $BASH_USR_BIN"
-	}
 
 
 	function lux_pre_config_bin_dir(){
@@ -410,7 +466,7 @@ function assert_ready(){
 
 			vars=( BASH_USR_BIN MY_BIN HOME_BIN USR_BIN QODE_BIN BIN)
 			for this in ${vars[@]}; do
-				info "TRY $this => ${!this}"
+				#info "TRY $this => ${!this}"
 				if [ -n "${!this}" ]; then
 				  BASH_USR_BIN="${!this}"
 				  break;
@@ -422,21 +478,21 @@ function assert_ready(){
 			if [ -z "$BASH_USR_BIN" ]; then
 				res=$(prompt_path "Cant find a default BIN directory var. What bin path to use (ex:\$HOME/bin) " "Set your home bin to")
 				BASH_USR_BIN="$res"
-				lux_pre_config_set_binvars "$BASH_USR_BIN"
+				repair_binvars "$BASH_USR_BIN"
 			fi
 
 			unstat STATE_BASH_UBIN_DEF
 
 		else
-			ptrace "found BASH_USR_BIN ($BASH_USR_BIN) ??"
+			: #ptrace "found BASH_USR_BIN ($BASH_USR_BIN) ??"
 		fi
 
 
 		trace "try Resolve STATE_BASH_UBIN_PATH"
 		if is_error STATE_BASH_UBIN_PATH; then
-			ptrace "PATH missing home bin, create rc file or set env var"
+			wtrace "PATH missing home bin, create rc file or set env var"
 		else
-			ptrace "# Not implemented (STATE_BASH_UBIN_PATH)"
+			: #ptrace "# Not implemented (STATE_BASH_UBIN_PATH)"
 		fi
 
 		trace "try Resolve STATE_BASH_UBIN_DIR"
@@ -444,11 +500,9 @@ function assert_ready(){
 			[ ! -d "$BASH_USR_BIN" ] && mkdir -P "$BASH_USR_BIN" || :
 			[ -d "$BASH_USR_BIN" ] && unstat STATE_BASH_UBIN_DIR || :
 		else
-			ptrace "# Not implemented (STATE_BASH_UBIN_DIR)"
+			: #ptrace "# Not implemented (STATE_BASH_UBIN_DIR)"
 		fi
-
 	}
-
 
 
 
@@ -456,7 +510,7 @@ function assert_ready(){
 		trace "try Resolve STATE_LUX_INST_DEF"
 		if is_error STATE_LUX_INST_DEF; then
 
-			lux_pre_config_set_binvars "$BASH_USR_BIN"
+			repair_binvars "$BASH_USR_BIN"
 
 			if [ -z "$QODEPARTY_INSTALL_DIR" ] || [ -z "$LUX_INSTALL_DIR" ]; then
 				wtrace "Missing Dirs"
@@ -481,5 +535,4 @@ function assert_ready(){
 		else
 			ptrace "#"
 		fi
-
 	}

@@ -486,7 +486,8 @@
 ## import file:inc-filetools ##
 ##==============================================================================
 	function find_dirs(){
-		__print "${purple}Finding repo folders! This may take a minute... $2 $x"
+		info "Finding repo folders..."
+		warn "This may take a minute depending..."
 		find_cmd="find ${2:-.} -mindepth 1"
 		[[ $1 =~ "1"   ]] && find_cmd+=" -maxdepth 2" || :
 		[[ $1 =~ git ]] && find_cmd+=" -name .git"  || :
@@ -589,40 +590,6 @@
 ##==============================================================================
 ## import file:inc-meta ##
 ##==============================================================================
-	function check_rc_repos(){
-		local res ret next
-		if [ -z "$LUX_SEARCH_PATH" ]; then
-			wtrace "Lux search path missing${x}"
-			if confirm "${lambda} ${blue}LUX_HOME$x is not set. Set the location manually (y/n)"; then
-				res=$(prompt_path "Where is \${blue}LUX_HOME\$x directory on \$purple\$HOSTNAME\$x" "Is this correct" "$LUX_HOME");ret=$?
-			else
-				:
-			fi
-			if confirm "${x}Do you want to run repo finder (y/n)"; then
-				  sleep 0.2
-					res=$(prompt_path "Where should Lux search for Repos ex: \$purple\$default\$x" "Search for Lux repos in" "$HOME/src");ret=$?
-					[ $ret -eq 1 ] && return 1;
-					lux_need_align_repos;ret=$?
-					if [ $ret -eq 0 ]; then
-							if [ -d "$res" ]; then
-								pass "Found search path $res" #"$ret"
-								lux_find_repos "$res"; ret=$?
-								[ $ret -eq 0 ] && LUX_SEARCH_PATH="$res" || :
-								lux_align_repos;
-							else
-							  fatal "Unable to find search path -> $res"
-							fi
-					fi
-				return 0
-			else
-				return 1
-			fi
-		fi
-		return 0
-	}
-	function lux_reset_rc(){
-		[ -f "$LUX_RC" ] && rm "$LUX_RC"
-	}
 	function lux_need_align_repos(){
 		[ -z "$LUX_WWW"  ] && missing+=( "$LUX_WWW" ) || :
 		[ -z "$LUX_CLI"  ] && missing+=( "$LUX_CLI" ) || :
@@ -656,12 +623,6 @@
 					missing+=("Missing:$this")
 				fi
 			done
-			if [ -d "$LUX_HOME" ]; then
-				lux_pre_config_set_home "$LUX_HOME"
-			else
-				wtrace "Cant find Lux Home"
-				lux_make_rc
-			fi
 			dump "${missing[@]}"
 		else
 			dump "${want[@]}"
@@ -786,6 +747,9 @@
 	function lux_load_rc(){
 		[ -f "$LUX_RC" ] && info "Loading .luxrc file..." && source $LUX_RC && unstat STATE_LUX_RC_FILE || wtrace "Cant load Lux RC. Missing ($LUX_RC). "
 	}
+	function lux_reset_rc(){
+		[ -f "$LUX_RC" ] && rm "$LUX_RC"
+	}
 ##==============================================================================
 ## import file:inc-checkup ##
 ##==============================================================================
@@ -805,58 +769,8 @@ function is_error(){
 function unstat(){
 	local val="-$1"; shift;
 	local list=(${status_err[@]})
-	wtrace "Unsetting status [$val]"
 	val=$(upd_array "$val" "${list[@]}")
 	status_err=($val)
-}
-	function __env_repair(){
-		trace "---env_repair"
-		local arr=(${@})
-		local len=${#arr[@]}
-		if [ $len -gt 0 ]; then
-			for i in ${!arr[@]}; do
-				local this="${arr[$i]}"
-				declare -F "${!this}" &> /dev/null
-				ret=$?
-				if [ $ret -eq 0 ]; then
-					${!this};
-					ret=$?
-					sleep .02
-					log "$(res $ret) Fixed ($this)?"
-				else
-				 log "$(res $ret) No FX for ($this)"
-				fi
-			done
-		fi
-		return 0
-	}
-function lux_full_repair(){
-	lux_checkup
-	silly "Lux Repairing..."
-	lux_pre_config
-	lux_pre_config_cli
-	lux_pre_config_bash_prof
-	lux_pre_config_lux_home
-	lux_pre_config_set_home "$LUX_HOME" #only set with rc
-	lux_pre_config_rc_file #attempt to make rc file if it doesnt exist
-	lux_pre_config_bin_dir
-	lux_pre_install
-	lux_make_rc
-}
-function lux_auto_repair(){
-	lux_pre_config_cli
-	lux_pre_config_lux_home
-	lux_pre_config_set_home "$LUX_HOME" #only set with rc
-	lux_pre_config_rc_file
-	lux_pre_config_bin_dir
-}
-function lux_checkup(){
-	silly "Check Setup!"
-	unset status_err
-	unset err_vals
-	unset status_pass
-	unset pass_vals
-	check_each_state
 }
 function dump_results(){
 	trace "$bline"
@@ -869,6 +783,53 @@ function dump_results(){
 	dump "${status_pass[@]}"
 	opt_dump_col="$cyan"
 	dump "${pass_vals[@]}"
+}
+function __env_repair(){
+	trace "---env_repair"
+	local arr=(${@})
+	local len=${#arr[@]}
+	if [ $len -gt 0 ]; then
+		for i in ${!arr[@]}; do
+			local this="${arr[$i]}"
+			declare -F "${!this}" &> /dev/null
+			ret=$?
+			if [ $ret -eq 0 ]; then
+				${!this};
+				ret=$?
+				sleep .02
+				log "$(res $ret) Fixed ($this)?"
+			else
+			 log "$(res $ret) No FX for ($this)"
+			fi
+		done
+	fi
+	return 0
+}
+function lux_full_repair(){
+	lux_checkup
+	silly "Lux Repairing..."
+	lux_pre_config
+	lux_pre_config_cli
+	lux_pre_config_bash_prof
+	lux_pre_config_lux_home
+	lux_pre_config_rc_file #attempt to make rc file if it doesnt exist
+	lux_pre_config_bin_dir
+	lux_pre_install
+	lux_make_rc
+}
+function lux_auto_repair(){
+	lux_pre_config_cli
+	lux_pre_config_lux_home
+	lux_pre_config_rc_file
+	lux_pre_config_bin_dir
+}
+function lux_checkup(){
+	silly "Check Setup!"
+	unset status_err
+	unset err_vals
+	unset status_pass
+	unset pass_vals
+	check_each_state
 }
 function check_each_state(){
 	status_err=()
@@ -949,6 +910,56 @@ function assert_ready(){
 	local this=$1
 	:
 }
+	function repair_home(){
+		LUX_HOME="$1"
+		lux_pre_config_set_homevars
+		[ -d "$LUX_HOME" ] && unstat STATE_LUX_HOME_DEF || :
+		ptrace "Repaired LUX Home ($LUX_HOME)"
+	}
+	function repair_binvars(){
+		trace "try Resolve STATE_BASH_UBIN_DEF-(Sub Dirs)"
+		BASH_USR_BIN="$1"
+		if [ -n "$BASH_USR_BIN" ]; then
+			QODEPARTY_INSTALL_DIR="$BASH_USR_BIN/qodeparty"
+			LUX_INSTALL_DIR="$QODEPARTY_INSTALL_DIR/lux"
+		else
+			: #printf "Lux home not defined $LUX_HOME \n"
+		fi
+		ptrace "Repaired Bin Vars ($BASH_USR_BIN)"
+	}
+	function prompt_home(){
+		if confirm "${lambda} ${blue}LUX_HOME$x is not set. Set the location manually (y/n)"; then
+			res=$(prompt_path "Where is \${blue}LUX_HOME\$x directory on \$blue\$HOSTNAME\$x" "Is this correct" "$LUX_HOME");ret=$?
+		else
+			:
+		fi
+	}
+	function prompt_repos(){
+		local res ret next
+		if [ -z "$LUX_SEARCH_PATH" ]; then
+			wtrace "Lux search path missing${x}"
+			if confirm "${x}Do you want to run repo finder (y/n)"; then
+				  sleep 0.2
+					res=$(prompt_path "Where should Lux search for Repos ex: \$blue\$default\$x" "Search for Lux repos in" "$HOME/src");ret=$?
+					[ $ret -eq 1 ] && return 1;
+					lux_need_align_repos;ret=$?
+					if [ $ret -eq 0 ]; then
+							if [ -d "$res" ]; then
+								pass "Found search path $res" #"$ret"
+								lux_find_repos "$res"; ret=$?
+								[ $ret -eq 0 ] && LUX_SEARCH_PATH="$res" || :
+								lux_align_repos;
+							else
+							  fatal "Unable to find search path -> $res"
+							fi
+					fi
+				return 0
+			else
+				return 1
+			fi
+		fi
+		return 0
+	}
 	function lux_pre_config(){
 		trace "try Resolve STATE_DBIN_PATH"
 		if is_error STATE_DBIN_PATH; then
@@ -981,14 +992,22 @@ function assert_ready(){
 		if is_error STATE_LUX_HOME_DEF; then
 			if [ -n "$LUX_CSS" ]; then
 				LUX_HOME="$LUX_CSS"
-				lux_pre_config_set_home "$LUX_HOME"
 			else
 				if [ $opt_skip_input -eq 1 ]; then
-					check_rc_repos "$LUX_HOME";ret=$?
+					prompt_repos "$LUX_HOME";ret=$?
+					if [ -d "$LUX_HOME" ]; then
+						repair_home "$LUX_HOME"
+					else
+						wtrace "Cant find Lux Home"
+						lux_make_rc
+					fi
 					[ $ret -eq 0 ] && unstat STATE_LUX_SRC_DEF || :
 				else
 					:
 				fi
+			fi
+			if [ -n "$LUX_HOME" ]; then
+				repair_home "$LUX_HOME"
 			fi
 		else
 			ptrace "found LUX Home ($LUX_HOME)"
@@ -1002,12 +1021,6 @@ function assert_ready(){
 		else
 			ptrace "found LUX_RC"
 		fi
-	}
-	function lux_pre_config_set_home(){
-		LUX_HOME="$1"
-		lux_pre_config_set_homevars
-		[ -d "$LUX_HOME" ] && unstat STATE_LUX_HOME_DEF || :
-		ptrace "Generated LUX Home ($LUX_HOME)"
 	}
 	function lux_pre_config_set_homevars(){
 		trace "try Resolve STATE_LUX_BUILD_DEF"
@@ -1035,23 +1048,11 @@ function assert_ready(){
 			: #printf "Lux home not defined $LUX_HOME \n"
 		fi
 	}
-	function lux_pre_config_set_binvars(){
-		trace "try Resolve STATE_BASH_UBIN_DEF-(Sub Dirs)"
-		BASH_USR_BIN="$1"
-		if [ -n "$BASH_USR_BIN" ]; then
-			QODEPARTY_INSTALL_DIR="$BASH_USR_BIN/qodeparty"
-			LUX_INSTALL_DIR="$QODEPARTY_INSTALL_DIR/lux"
-		else
-			: #printf "Lux home not defined $LUX_HOME \n"
-		fi
-		ptrace "Generated Bin User Vars $BASH_USR_BIN"
-	}
 	function lux_pre_config_bin_dir(){
 		trace "try Resolve STATE_BASH_UBIN_DEF"
 		if is_error STATE_BASH_UBIN_DEF; then
 			vars=( BASH_USR_BIN MY_BIN HOME_BIN USR_BIN QODE_BIN BIN)
 			for this in ${vars[@]}; do
-				info "TRY $this => ${!this}"
 				if [ -n "${!this}" ]; then
 				  BASH_USR_BIN="${!this}"
 				  break;
@@ -1060,7 +1061,7 @@ function assert_ready(){
 			if [ -z "$BASH_USR_BIN" ]; then
 				res=$(prompt_path "Cant find a default BIN directory var. What bin path to use (ex:\$HOME/bin) " "Set your home bin to")
 				BASH_USR_BIN="$res"
-				lux_pre_config_set_binvars "$BASH_USR_BIN"
+				repair_binvars "$BASH_USR_BIN"
 			fi
 			unstat STATE_BASH_UBIN_DEF
 		else
@@ -1068,22 +1069,22 @@ function assert_ready(){
 		fi
 		trace "try Resolve STATE_BASH_UBIN_PATH"
 		if is_error STATE_BASH_UBIN_PATH; then
-			ptrace "PATH missing home bin, create rc file or set env var"
+			wtrace "PATH missing home bin, create rc file or set env var"
 		else
-			ptrace "# Not implemented (STATE_BASH_UBIN_PATH)"
+			: #ptrace "# Not implemented (STATE_BASH_UBIN_PATH)"
 		fi
 		trace "try Resolve STATE_BASH_UBIN_DIR"
 		if is_error STATE_BASH_UBIN_DIR; then
 			[ ! -d "$BASH_USR_BIN" ] && mkdir -P "$BASH_USR_BIN" || :
 			[ -d "$BASH_USR_BIN" ] && unstat STATE_BASH_UBIN_DIR || :
 		else
-			ptrace "# Not implemented (STATE_BASH_UBIN_DIR)"
+			: #ptrace "# Not implemented (STATE_BASH_UBIN_DIR)"
 		fi
 	}
 	function lux_pre_install(){
 		trace "try Resolve STATE_LUX_INST_DEF"
 		if is_error STATE_LUX_INST_DEF; then
-			lux_pre_config_set_binvars "$BASH_USR_BIN"
+			repair_binvars "$BASH_USR_BIN"
 			if [ -z "$QODEPARTY_INSTALL_DIR" ] || [ -z "$LUX_INSTALL_DIR" ]; then
 				wtrace "Missing Dirs"
 			fi

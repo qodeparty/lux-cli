@@ -1,52 +1,6 @@
 #!/usr/bin/env bash
 
-	function check_rc_repos(){
-		local res ret next
 
-		if [ -z "$LUX_SEARCH_PATH" ]; then
-			wtrace "Lux search path missing${x}"
-
-			if confirm "${lambda} ${blue}LUX_HOME$x is not set. Set the location manually (y/n)"; then
-				res=$(prompt_path "Where is \${blue}LUX_HOME\$x directory on \$purple\$HOSTNAME\$x" "Is this correct" "$LUX_HOME");ret=$?
-				#[ $ret -eq 1 ] && return 1;
-			else
-				:
-			fi
-
-			if confirm "${x}Do you want to run repo finder (y/n)"; then
-				#reset_user_data
-				  sleep 0.2
-					#clear
-					res=$(prompt_path "Where should Lux search for Repos ex: \$purple\$default\$x" "Search for Lux repos in" "$HOME/src");ret=$?
-					[ $ret -eq 1 ] && return 1;
-
-					lux_need_align_repos;ret=$?
-
-					if [ $ret -eq 0 ]; then
-							if [ -d "$res" ]; then
-								pass "Found search path $res" #"$ret"
-								lux_find_repos "$res"; ret=$?
-								[ $ret -eq 0 ] && LUX_SEARCH_PATH="$res" || :
-								#silly "Search path was $res $LUX_SEARCH_PATH"
-								lux_align_repos;
-
-							else
-							  fatal "Unable to find search path -> $res"
-							fi
-					fi
-
-				return 0
-			else
-				return 1
-			fi
-		fi
-		return 0
-	}
-
-
-	function lux_reset_rc(){
-		[ -f "$LUX_RC" ] && rm "$LUX_RC"
-	}
 
 	function lux_need_align_repos(){
 		[ -z "$LUX_WWW"  ] && missing+=( "$LUX_WWW" ) || :
@@ -93,12 +47,6 @@
 				fi
 			done
 
-			if [ -d "$LUX_HOME" ]; then
-				lux_pre_config_set_home "$LUX_HOME"
-			else
-				wtrace "Cant find Lux Home"
-				lux_make_rc
-			fi
 
 			dump "${missing[@]}"
 
@@ -255,4 +203,9 @@
 
 	function lux_load_rc(){
 		[ -f "$LUX_RC" ] && info "Loading .luxrc file..." && source $LUX_RC && unstat STATE_LUX_RC_FILE || wtrace "Cant load Lux RC. Missing ($LUX_RC). "
+	}
+
+
+	function lux_reset_rc(){
+		[ -f "$LUX_RC" ] && rm "$LUX_RC"
 	}
