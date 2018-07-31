@@ -52,7 +52,7 @@
     [[ "${@}" =~ "--silly" ]] && opt_silly=0 || :
     [[ "${@}" =~ "--quiet" ]] && opt_quiet=0 || :
     [[ "${@}" =~ "--force" ]] && opt_force=0 || :
-
+    [[ "${@}" =~ "--dev"   ]] && opt_dev_mode=0 || :
 
     if [ $opt_quiet   -eq 1 ]; then
        [ $opt_silly   -eq 0 ] && opt_verbose=0
@@ -108,9 +108,8 @@
     function  ftrace(){ local text=${1:-}; [ $opt_verbose -eq 0 ] && __print " $text"   "fail"; }
     function  ptrace(){ local text=${1:-}; [ $opt_verbose -eq 0 ] && __print " $text$x" "pass"; }
     function  wtrace(){ local text=${1:-}; [ $opt_verbose -eq 0 ] && __print " $text$x" "delta"; }
-    function  ctrace(){
-      local text=${1:-}; [ $opt_verbose -eq 0 ] && column -t "${text}" 1>&2 || :;
-    }
+
+    function  dtrace(){ local text=${1:-}; [ $opt_dev_mode -eq 0 ] && __print "##[ $text ]##"   "purple"; }
 
     function   error(){ local text=${1:-}; __print " $text" "fail"; }
     function    warn(){ local text=${1:-}; __print " $text$x" "delta";  }
@@ -197,3 +196,4 @@
 
   #__print "$BASH_SOURCE from term $DIR yay $(dirname ${BASH_SOURCE[1]} && pwd) ||"
 
+  [ $opt_dev_mode -eq 0 ] && dtrace "DEV MODE ENABLED"

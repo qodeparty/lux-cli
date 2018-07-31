@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-
+	#this changes with --dev enabled
 	LUX_RC="$HOME/.luxrc"
 
 	#HOME from CLI Perspective doesnt exist until its found or specified

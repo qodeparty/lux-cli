@@ -28,6 +28,7 @@
 	opt_verbose=0
 	opt_no_comments=1
 	opt_skip_input=1
+	opt_dev_mode=1
 	missing=()
 	__repo_list=( )
 	__alias_list=( )
@@ -124,6 +125,7 @@
     [[ "${@}" =~ "--silly" ]] && opt_silly=0 || :
     [[ "${@}" =~ "--quiet" ]] && opt_quiet=0 || :
     [[ "${@}" =~ "--force" ]] && opt_force=0 || :
+    [[ "${@}" =~ "--dev"   ]] && opt_dev_mode=0 || :
     if [ $opt_quiet   -eq 1 ]; then
        [ $opt_silly   -eq 0 ] && opt_verbose=0
        [ $opt_verbose -eq 0 ] && opt_debug=0
@@ -159,9 +161,7 @@
     function  ftrace(){ local text=${1:-}; [ $opt_verbose -eq 0 ] && __print " $text"   "fail"; }
     function  ptrace(){ local text=${1:-}; [ $opt_verbose -eq 0 ] && __print " $text$x" "pass"; }
     function  wtrace(){ local text=${1:-}; [ $opt_verbose -eq 0 ] && __print " $text$x" "delta"; }
-    function  ctrace(){
-      local text=${1:-}; [ $opt_verbose -eq 0 ] && column -t "${text}" 1>&2 || :;
-    }
+    function  dtrace(){ local text=${1:-}; [ $opt_dev_mode -eq 0 ] && __print "##[ $text ]##"   "purple"; }
     function   error(){ local text=${1:-}; __print " $text" "fail"; }
     function    warn(){ local text=${1:-}; __print " $text$x" "delta";  }
     function    pass(){ local text=${1:-}; __print " $text$x" "pass"; }
@@ -233,6 +233,7 @@
       trace "$out"
     fi
   }
+  [ $opt_dev_mode -eq 0 ] && dtrace "DEV MODE ENABLED"
 ##==============================================================================
 ## import file:inc-doc ##
 ##==============================================================================
@@ -487,7 +488,7 @@
 ##==============================================================================
 	function find_dirs(){
 		info "Finding repo folders..."
-		warn "This may take a minute depending..."
+		warn "This may take a few seconds..."
 		find_cmd="find ${2:-.} -mindepth 1"
 		[[ $1 =~ "1"   ]] && find_cmd+=" -maxdepth 2" || :
 		[[ $1 =~ git ]] && find_cmd+=" -name .git"  || :
@@ -590,6 +591,7 @@
 ##==============================================================================
 ## import file:inc-meta ##
 ##==============================================================================
+	[ $opt_dev_mode -eq 0 ] && LUX_RC="./.luxrc" || :
 	function lux_need_align_repos(){
 		[ -z "$LUX_WWW"  ] && missing+=( "$LUX_WWW" ) || :
 		[ -z "$LUX_CLI"  ] && missing+=( "$LUX_CLI" ) || :
@@ -697,6 +699,7 @@
 		data="$(cat <<-EOF
 			${line}
 			### lux generated config file $(date)
+			export BASH_USR_BIN="$BASH_USR_BIN"
 			export LUX_HOME="$LUX_HOME"
 			export LUX_DEV_BIN="$LUX_DEV_BIN"
 			export LUX_BIN="$LUX_BIN"
@@ -741,7 +744,7 @@
 			echo $line${nl}
 			cat "$LUX_RC"
 		else
-			__warn "Lux RC doesnt exist."
+			warn "Lux RC doesnt exist. ($LUX_RC)"
 		fi
 	}
 	function lux_load_rc(){
@@ -749,6 +752,9 @@
 	}
 	function lux_reset_rc(){
 		[ -f "$LUX_RC" ] && rm "$LUX_RC"
+	}
+	function lux_set_rc(){
+		[ -f "$1" ] && LUX_RC="$1"
 	}
 ##==============================================================================
 ## import file:inc-checkup ##
@@ -776,8 +782,6 @@ function dump_results(){
 	trace "$bline"
 	opt_dump_col="$orange"
 	dump "${status_err[@]}"
-	opt_dump_col="$purple"
-	dump "${err_vals[@]}"
 	trace "$bline"
 	opt_dump_col="$blue"
 	dump "${status_pass[@]}"
@@ -806,12 +810,14 @@ function __env_repair(){
 	return 0
 }
 function lux_full_repair(){
+	lux_auto_repair
 	lux_checkup
 	silly "Lux Repairing..."
 	lux_pre_config
 	lux_pre_config_cli
 	lux_pre_config_bash_prof
 	lux_pre_config_lux_home
+	lux_pre_config_set_homevars
 	lux_pre_config_rc_file #attempt to make rc file if it doesnt exist
 	lux_pre_config_bin_dir
 	lux_pre_install
@@ -820,8 +826,10 @@ function lux_full_repair(){
 function lux_auto_repair(){
 	lux_pre_config_cli
 	lux_pre_config_lux_home
+	lux_pre_config_set_homevars
 	lux_pre_config_rc_file
 	lux_pre_config_bin_dir
+	lux_pre_install
 }
 function lux_checkup(){
 	silly "Check Setup!"
@@ -829,6 +837,7 @@ function lux_checkup(){
 	unset err_vals
 	unset status_pass
 	unset pass_vals
+	lux_auto_repair
 	check_each_state
 }
 function check_each_state(){
@@ -914,7 +923,7 @@ function assert_ready(){
 		LUX_HOME="$1"
 		lux_pre_config_set_homevars
 		[ -d "$LUX_HOME" ] && unstat STATE_LUX_HOME_DEF || :
-		ptrace "Repaired LUX Home ($LUX_HOME)"
+		dtrace "Repaired LUX Home ($LUX_HOME)"
 	}
 	function repair_binvars(){
 		trace "try Resolve STATE_BASH_UBIN_DEF-(Sub Dirs)"
@@ -922,10 +931,14 @@ function assert_ready(){
 		if [ -n "$BASH_USR_BIN" ]; then
 			QODEPARTY_INSTALL_DIR="$BASH_USR_BIN/qodeparty"
 			LUX_INSTALL_DIR="$QODEPARTY_INSTALL_DIR/lux"
+			[ -d "$LUX_INSTALL_DIR" ] && unstat STATE_LUX_INST_DEF || :
 		else
 			: #printf "Lux home not defined $LUX_HOME \n"
 		fi
-		ptrace "Repaired Bin Vars ($BASH_USR_BIN)"
+		dtrace "Repaired Bin Vars ($BASH_USR_BIN)"
+	}
+	function repair_install_dir(){
+		:
 	}
 	function prompt_home(){
 		if confirm "${lambda} ${blue}LUX_HOME$x is not set. Set the location manually (y/n)"; then
@@ -965,7 +978,7 @@ function assert_ready(){
 		if is_error STATE_DBIN_PATH; then
 			warn "Please run config again!"
 		else
-			ptrace "found DEV_BIN"
+			: #pptrace "found DEV_BIN"
 		fi
 	}
 	function lux_pre_config_cli(){
@@ -976,7 +989,7 @@ function assert_ready(){
 				unstat STATE_LUX_CLI_DEF
 			fi
 		else
-			ptrace "found CLI_DEF ($LUX_CONFIG_HOME)"
+			: #pptrace "found CLI_DEF ($LUX_CONFIG_HOME)"
 		fi
 	}
 	function lux_pre_config_bash_prof(){
@@ -984,7 +997,7 @@ function assert_ready(){
 		if is_error STATE_BASH_PROF_DEF; then
 			warn "Prompt User for PROFILE or RC"
 		else
-			ptrace "found BASH_PROFILE ($BASH_PROFILE)"
+			: #pptrace "found BASH_PROFILE ($BASH_PROFILE)"
 		fi
 	}
 	function lux_pre_config_lux_home(){
@@ -995,31 +1008,28 @@ function assert_ready(){
 			else
 				if [ $opt_skip_input -eq 1 ]; then
 					prompt_repos "$LUX_HOME";ret=$?
-					if [ -d "$LUX_HOME" ]; then
-						repair_home "$LUX_HOME"
-					else
-						wtrace "Cant find Lux Home"
-						lux_make_rc
-					fi
 					[ $ret -eq 0 ] && unstat STATE_LUX_SRC_DEF || :
 				else
 					:
 				fi
 			fi
-			if [ -n "$LUX_HOME" ]; then
+			if [ -d "$LUX_HOME" ]; then
 				repair_home "$LUX_HOME"
+			else
+				wtrace "Cant find Lux Home"
+				lux_make_rc
 			fi
 		else
-			ptrace "found LUX Home ($LUX_HOME)"
+			dtrace "found LUX Home ($LUX_HOME)"
 		fi
 	}
 	function lux_pre_config_rc_file(){
 		trace "try Resolve STATE_LUX_RC_FILE"
 		if is_error STATE_LUX_RC_FILE; then
 			warn "RC Files requires PROFILE"
-			lux_make_rc 1
+			lux_make_rc
 		else
-			ptrace "found LUX_RC"
+			: #pptrace "found LUX_RC"
 		fi
 	}
 	function lux_pre_config_set_homevars(){
@@ -1051,25 +1061,28 @@ function assert_ready(){
 	function lux_pre_config_bin_dir(){
 		trace "try Resolve STATE_BASH_UBIN_DEF"
 		if is_error STATE_BASH_UBIN_DEF; then
-			vars=( BASH_USR_BIN MY_BIN HOME_BIN USR_BIN QODE_BIN BIN)
-			for this in ${vars[@]}; do
-				if [ -n "${!this}" ]; then
-				  BASH_USR_BIN="${!this}"
-				  break;
+				info "Error STATE UBIN"
+				vars=( BASH_USR_BIN MY_BIN HOME_BIN USR_BIN QODE_BIN BIN)
+				for this in ${vars[@]}; do
+					dtrace "TRY $this => ${!this}" #devmode trace
+					if [ -n "${!this}" ]; then
+					  BASH_USR_BIN="${!this}"
+					  repair_binvars "$BASH_USR_BIN"
+					  break;
+					fi
+				done
+				if [ -z "$BASH_USR_BIN" ]; then
+					res=$(prompt_path "Cant find a default BIN directory var. What bin path to use (ex:\$HOME/bin) " "Set your home bin to")
+					BASH_USR_BIN="$res"
+					repair_binvars "$BASH_USR_BIN"
 				fi
-			done
-			if [ -z "$BASH_USR_BIN" ]; then
-				res=$(prompt_path "Cant find a default BIN directory var. What bin path to use (ex:\$HOME/bin) " "Set your home bin to")
-				BASH_USR_BIN="$res"
-				repair_binvars "$BASH_USR_BIN"
-			fi
-			unstat STATE_BASH_UBIN_DEF
+				unstat STATE_BASH_UBIN_DEF
 		else
-			ptrace "found BASH_USR_BIN ($BASH_USR_BIN) ??"
+			: #ptrace "found BASH_USR_BIN ($BASH_USR_BIN) ??"
 		fi
 		trace "try Resolve STATE_BASH_UBIN_PATH"
 		if is_error STATE_BASH_UBIN_PATH; then
-			wtrace "PATH missing home bin, create rc file or set env var"
+			dtrace "PATH missing home bin, create rc file or set env var"
 		else
 			: #ptrace "# Not implemented (STATE_BASH_UBIN_PATH)"
 		fi
@@ -1093,7 +1106,7 @@ function assert_ready(){
 		fi
 		trace "try Resolve STATE_LUX_INST_WRITE"
 		if is_error STATE_LUX_INST_WRITE; then
-			ftrace "#repair (STATE_LUX_INST_WRITE) not implemented"
+			dtrace "#repair (STATE_LUX_INST_WRITE) not implemented"
 			if [ -n "$LUX_INSTALL_DIR" ]; then
 				mkdir -p "$LUX_INSTALL_DIR"
 				if [ ! -d "$LUX_INSTALL_DIR" ]; then
@@ -1118,7 +1131,8 @@ function assert_ready(){
 			fi
 			case $call in
 				mcli)
-					if [[ "$0" =~ "luxbin" ]] && opt_debug=0; then
+					if [[ "$0" =~ "luxbin" ]]; then
+						opt_debug=0;
 						makebin "$1" "nocomments"
 						shift;
 					else
@@ -1126,8 +1140,8 @@ function assert_ready(){
 					fi
 					break;
 				;;
-				check)  opt_skip_input=0; lux_checkup; ret=$?;;
-				repair) lux_full_repair; ret=$?;;
+				check)  opt_skip_input=0; lux_checkup; dump_results; ret=$?;;
+				repair) lux_full_repair; dump_results; check_each_state; ret=$?;;
 				link)   profile_link;    ret=$?;;
 				unlink) profile_unlink;  ret=$?;;
 				rc*)    lux_dump_rc;     ret=$?;;

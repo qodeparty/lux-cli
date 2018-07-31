@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+	#build and use it localy in devmode
+	[ $opt_dev_mode -eq 0 ] && LUX_RC="./.luxrc" || :
 
 
 	function lux_need_align_repos(){
@@ -145,17 +147,23 @@
 			${line}
 			### lux generated config file $(date)
 
+			export BASH_USR_BIN="$BASH_USR_BIN"
+
 			export LUX_HOME="$LUX_HOME"
 			export LUX_DEV_BIN="$LUX_DEV_BIN"
 			export LUX_BIN="$LUX_BIN"
 			export LUX_RC="$LUX_RC"
 			export LUX_INST=0
 			export LUX_USER_CONF="$LUX_USER_CONF"
+
+			export LUX_INSTALL_DIR="$LUX_INSTALL_DIR"
+
 			export LUX_SEARCH_PATH="$LUX_SEARCH_PATH"
 			export LUX_CLI="$LUX_CLI"
 			export LUX_DEV="$LUX_DEV"
 			export LUX_CSS="$LUX_CSS"
 			export LUX_WWW="$LUX_WWW"
+
 			__repo_list=(${__repo_list[*]})
 			__alias_list=(${__alias_list[*]})
 
@@ -197,7 +205,7 @@
 			echo $line${nl}
 			cat "$LUX_RC"
 		else
-			__warn "Lux RC doesnt exist."
+			warn "Lux RC doesnt exist. ($LUX_RC)"
 		fi
 	}
 
@@ -208,4 +216,8 @@
 
 	function lux_reset_rc(){
 		[ -f "$LUX_RC" ] && rm "$LUX_RC"
+	}
+
+	function lux_set_rc(){
+		[ -f "$1" ] && LUX_RC="$1"
 	}

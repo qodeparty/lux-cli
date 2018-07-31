@@ -1,0 +1,38 @@
+#!/usr/bin/bash
+##------------------------------------------------------------------------------
+### lux generated config file Tue Jul 31 19:52:15 UTC 2018
+
+export BASH_USR_BIN="/home/qodeninja/.bin"
+
+export LUX_HOME="/home/qodeninja/src/repos/pub/qodeparty/lux/"
+export LUX_DEV_BIN="/home/qodeninja/src/repos/pub/qodeparty/lux-cli/src/bash"
+export LUX_BIN=""
+export LUX_RC="./.luxrc"
+export LUX_INST=0
+export LUX_USER_CONF=""
+
+export LUX_INSTALL_DIR="/home/qodeninja/.bin/qodeparty/lux"
+
+export LUX_SEARCH_PATH="/home/qodeninja/src"
+export LUX_CLI="/home/qodeninja/src/repos/pub/qodeparty/lux-cli/"
+export LUX_DEV="/home/qodeninja/src/repos/pub/qodeparty/lux-dev/"
+export LUX_CSS="/home/qodeninja/src/repos/pub/qodeparty/lux/"
+export LUX_WWW="/home/qodeninja/src/repos/pub/qodeparty/lux-www/"
+
+__repo_list=(/home/qodeninja/src/repos/pub/qodeparty/lux/ /home/qodeninja/src/repos/pub/qodeparty/lux-cli/ /home/qodeninja/src/repos/pub/qodeparty/lux-dev/ /home/qodeninja/src/repos/pub/qodeparty/lux-www/)
+__alias_list=(lux lux-cli lux-dev lux-www)
+
+if [ -n "$BASH_USR_BIN" ]; then
+[[ ! "$PATH" =~ "$BASH_USR_BIN" ]]  && export PATH=$PATH:$BASH_USR_BIN;
+fi
+
+if [ -n "$LUX_BIN" ]; then
+[[ ! "$PATH" =~ "$LUX_BIN" ]] && export PATH=$PATH:$LUX_BIN;
+else
+if [ -n "$LUX_DEV_BIN" ]; then
+[[ ! "$PATH" =~ "$LUX_DEV_BIN" ]] && export PATH=$PATH:$LUX_DEV_BIN;
+fi
+fi
+
+alias luxcd="cd $LUX_HOME; ls -la; [ -t 1 ] && printf \"\n[94m\xCE\xBBLux directory.(B[m\n\"||:"
+##------------------------------------------------------------------------------

@@ -24,7 +24,8 @@
 			fi
 			case $call in
 				mcli)
-					if [[ "$0" =~ "luxbin" ]] && opt_debug=0; then
+					if [[ "$0" =~ "luxbin" ]]; then
+						opt_debug=0;
 						makebin "$1" "nocomments"
 						#info "$1 $2"
 						shift;
@@ -34,7 +35,7 @@
 					break;
 				;;
 				check)  opt_skip_input=0; lux_checkup; ret=$?;;
-				repair) lux_full_repair; ret=$?;;
+				repair) opt_skip_input=1; lux_full_repair; ret=$?;;
 				link)   profile_link;    ret=$?;;
 				unlink) profile_unlink;  ret=$?;;
 				rc*)    lux_dump_rc;     ret=$?;;

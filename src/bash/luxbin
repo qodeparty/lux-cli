@@ -40,6 +40,7 @@
 	opt_verbose=0
 	opt_no_comments=1
 	opt_skip_input=1
+	opt_dev_mode=1
 
 	missing=()
 	__repo_list=( )
