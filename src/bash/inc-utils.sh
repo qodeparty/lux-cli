@@ -197,8 +197,8 @@
 	}
 
 	function makebin(){
-		tmp_file=$(search_replace_bash "$1" "$2")
-		silly "$THIS_ROOT"
-		mv "$tmp_file" "./luxbin"
+		dest_file="${1:-./src/bash/luxbin}"
+		tmp_file=$(search_replace_bash "$dest_file" "$2")
+		mv "$tmp_file" "./lux"
 		[ -f "$tmp_file.bak" ] && rm "$tmp_file.bak"
 	}

@@ -15,7 +15,7 @@
 		# if [ -f "$LUX_USER_CONF" ]; then
 		# 	add_var "local_conf:true" "local_conf_path:$LUX_USER_CONF"
 		# fi
-
+		lux_load_rc
 
 		for call in "$@"; do
 			shift
@@ -23,17 +23,22 @@
 				skip=1; continue
 			fi
 			case $call in
-				makebin)
-					makebin "$1" "nocomments"
-					info "$1 $2"
-					shift;
+				mcli)
+					if [[ "$0" =~ "luxbin" ]] && opt_debug=0; then
+						makebin "$1" "nocomments"
+						#info "$1 $2"
+						shift;
+					else
+						error "Cant compile lux from compiled lux! hehe nice try though"
+					fi
 					break;
 				;;
-				check)  lux_checkup;    ret=$?;;
-				link)   profile_link;   ret=$?;;
-				unlink) profile_unlink; ret=$?;;
-				rc*)    lux_dump_rc;    ret=$?;;
-				mrc*)   lux_make_rc 1;  ret=$?;;
+				check)  opt_skip_input=0; lux_checkup; ret=$?;;
+				repair) lux_full_repair; ret=$?;;
+				link)   profile_link;    ret=$?;;
+				unlink) profile_unlink;  ret=$?;;
+				rc*)    lux_dump_rc;     ret=$?;;
+				mrc*)   lux_make_rc 1;   ret=$?;;
 				vars)   lux_vars;;
 				help)   lux_usage;;
 				skip)   break;;

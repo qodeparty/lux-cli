@@ -5,11 +5,20 @@
 
 		if [ -z "$LUX_SEARCH_PATH" ]; then
 			wtrace "Lux search path missing${x}"
-			if confirm "Do you want to run repo finder (y/n)? > "; then
+
+			if confirm "${lambda} ${blue}LUX_HOME$x is not set. Set the location manually (y/n)"; then
+				res=$(prompt_path "Where is \${blue}LUX_HOME\$x directory on \$purple\$HOSTNAME\$x" "Is this correct" "$LUX_HOME");ret=$?
+				#[ $ret -eq 1 ] && return 1;
+			else
+				:
+			fi
+
+			if confirm "${x}Do you want to run repo finder (y/n)"; then
 				#reset_user_data
 				  sleep 0.2
 					#clear
-					res=$(prompt_path "Where shoud Lux search for Repos" "Search for Lux repos in")
+					res=$(prompt_path "Where should Lux search for Repos ex: \$purple\$default\$x" "Search for Lux repos in" "$HOME/src");ret=$?
+					[ $ret -eq 1 ] && return 1;
 
 					lux_need_align_repos;ret=$?
 
@@ -47,9 +56,9 @@
 		[ -z "$LUX_HOME" ] && missing+=( "$LUX_HOME" ) || :
 		len=${#missing[@]}
 
-		dump "${missing[@]}"
+		#dump "${missing[@]}"
 		[ $len -gt 0 ] && return 0
-		silly "dont need any repos! $len"
+		#silly "dont need any repos! $len"
 		return 1
 	}
 
@@ -236,6 +245,14 @@
 	}
 
 	function lux_dump_rc(){
-		echo $line${nl}
-		cat "$LUX_RC"
+		if [ -f "$LUX_RC" ]; then
+			echo $line${nl}
+			cat "$LUX_RC"
+		else
+			__warn "Lux RC doesnt exist."
+		fi
+	}
+
+	function lux_load_rc(){
+		[ -f "$LUX_RC" ] && info "Loading .luxrc file..." && source $LUX_RC && unstat STATE_LUX_RC_FILE || wtrace "Cant load Lux RC. Missing ($LUX_RC). "
 	}

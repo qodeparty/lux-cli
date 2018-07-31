@@ -38,6 +38,8 @@
 	THIS_DIR="$( cd $BIN_DIR && cd .. || exit; pwd)"
 
 	opt_verbose=0
+	opt_no_comments=1
+	opt_skip_input=1
 
 	missing=()
 	__repo_list=( )
@@ -75,30 +77,20 @@
 # Main
 #-------------------------------------------------------------------------------
 
-	function lux_checkup(){
+	# function lux_checkup(){
 
-		check_setup
-		lux_repair
+	# 	check_setup
+	# 	lux_repair
 
 
-		check_setup
+	# 	check_setup
 
-		#profile_unlink
-	}
+	# 	#profile_unlink
+	# }
 
-	function lux_repair(){
-		silly "Lux Repairing..."
-		lux_pre_config
-		lux_pre_config_cli
-		lux_pre_config_bash_prof
-		lux_pre_config_lux_home
-		lux_pre_config_rc_file
-		lux_pre_config_bin_dir
-		lux_pre_install
-	}
 
 	function main(){
-		[ -f "$LUX_RC" ] && source $LUX_RC || wtrace "Cant find Lux RC"
+		[ -f "$LUX_RC" ] && source $LUX_RC || : #wtrace "Lux RC is missing. "
 		dispatch "$@"
 	}
 
@@ -108,8 +100,8 @@
 if [ "$0" = "-bash" ]; then
 	:
 else
-
+	#info "$0 $1"
 	args=("${@}")
-
+	args=( "${args[@]/\-*}" ); #delete anything that looks like an option
 	main "${args[@]}";ret=$?
 fi

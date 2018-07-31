@@ -108,6 +108,10 @@
     function  ftrace(){ local text=${1:-}; [ $opt_verbose -eq 0 ] && __print " $text"   "fail"; }
     function  ptrace(){ local text=${1:-}; [ $opt_verbose -eq 0 ] && __print " $text$x" "pass"; }
     function  wtrace(){ local text=${1:-}; [ $opt_verbose -eq 0 ] && __print " $text$x" "delta"; }
+    function  ctrace(){
+      local text=${1:-}; [ $opt_verbose -eq 0 ] && column -t "${text}" 1>&2 || :;
+    }
+
     function   error(){ local text=${1:-}; __print " $text" "fail"; }
     function    warn(){ local text=${1:-}; __print " $text$x" "delta";  }
     function    pass(){ local text=${1:-}; __print " $text$x" "pass"; }
@@ -123,7 +127,7 @@
 
   function confirm() {
     local ret;ret=1
-    __printf "${1}" "white" #:-Are you sure ?
+    __printf "${1}? > " "white" #:-Are you sure ?
     while read -r -n 1 -s answer; do
       #info "try answer..."
       if [[ $answer = [YyNn10tf+\-q] ]]; then
@@ -142,13 +146,25 @@
     local res ret next
     prompt="$1"
     prompt_sure="$2"
+    default="$3"
+
+    #fancy -> set defualt and escape prompt shell values and chars
+    prompt=$(eval echo "$prompt")
+
     while [[ -z "$next" ]]; do
       read -p "$prompt? > ${bld}${green}" __NEXT_DIR
       res=$(eval echo $__NEXT_DIR)
+      [ -z "$res" ] && res="$default"
       if [ -n "$res" ]; then
-        if confirm "${x}${prompt_sure} [ ${blue}$res${x} ] (y/n)? >"; then
+
+        if [ "$res" = '?' ]; then
+          echo "cancelled"
+          return 1
+        fi
+
+        if confirm "${x}${prompt_sure} [ ${blue}$res${x} ] (y/n)"; then
           if [ ! -d "$res" ]; then
-            warn "Couldn't find the directory at [ ${blue}$res${x} ]! Try Again."
+            error "Couldn't find the directory ($res). Try Again. Or '?' to cancel."
           else
             next=1
           fi
@@ -171,7 +187,7 @@
         this="${arr[$i]}"
         [ -n "$this" ] && printf -v "out" "$flag$opt_dump_col$dots(%02d of %02d) $this $x" "$i" "$len"
         trace "$out"
-        sleep 0.1
+        sleep 0.05
       done
       cleanup
       printf -v "out" "$flag$green$pass (%02d of %02d) Read. $x$eol" "$len" "$len"
