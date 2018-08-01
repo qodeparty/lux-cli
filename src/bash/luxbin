@@ -23,6 +23,7 @@
 	readonly script_rc_file=".luxrc"
 	readonly script_log_file="$script_id.log"
 	readonly script_lic="MIT License"
+					 script_entry="$0"
 
 	function include(){
 		source "${@}"
@@ -34,8 +35,9 @@
 ##--save me
 	CPID="$$"
 
-	BIN_DIR="$( cd "$(dirname "$0")" || exit; pwd)"
-	THIS_DIR="$( cd $BIN_DIR && cd .. || exit; pwd)"
+	BIN_DIR="$( cd "$(dirname "$0")"   || exit; pwd)"
+	THIS_DIR="$( cd $BIN_DIR && cd ..  || exit; pwd)"
+	ROOT_DIR="$( cd $THIS_DIR && cd .. || exit; pwd)"
 
 	opt_verbose=0
 	opt_no_comments=1

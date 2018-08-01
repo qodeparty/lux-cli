@@ -26,7 +26,7 @@ function is_error(){
 function unstat(){
 	local val="-$1"; shift;
 	local list=(${status_err[@]})
-	#wtrace "Unsetting status [$val]"
+	wtrace "Unsetting status [$val]"
 	val=$(upd_array "$val" "${list[@]}")
 	status_err=($val)
 }
@@ -100,6 +100,7 @@ function lux_full_repair(){
 	lux_pre_config_rc_file
 	lux_pre_config_bin_dir
 	lux_pre_install
+	lux_want_install
 
 	lux_make_rc
 
@@ -116,7 +117,7 @@ function lux_auto_repair(){
 	lux_pre_config_rc_file
 	lux_pre_config_bin_dir
 	lux_pre_install
-
+	lux_want_install
 }
 
 
@@ -158,8 +159,8 @@ function check_each_state(){
 	status_pass=()
 	pass_vals=()
 
-	assert_defined  BIN_DIR        STATE_DBIN_DEF       ;
-	assert_inpath   BIN_DIR			   STATE_DBIN_PATH			;
+	assert_defined  LUX_DEV_BIN    STATE_LUX_DBIN_DEF   ;
+	assert_inpath   LUX_DEV_BIN		 STATE_LUX_DBIN_PATH	;
 
 	assert_defined  BASH_PROFILE   STATE_BASH_PROF_DEF  ;
 	assert_defined  BASH_RC        STATE_BASH_RC_DEF    ;
@@ -185,7 +186,13 @@ function check_each_state(){
 	assert_defined  LUX_INSTALL_DIR  STATE_LUX_INST_DEF ;
 	assert_writable LUX_INSTALL_DIR  STATE_LUX_INST_WRITE;
 
-	#LUX_CLI_INSALL_PATH
+	assert_defined  LUX_INSTALL_BIN  STATE_LUX_IBIN_DEF;
+	assert_file 		LUX_INSTALL_BIN  STATE_LUX_IBIN_FILE;
+
+	#needs LUX_DEV_BIN
+	assert_file 		LUX_INSTALL_DIST STATE_LUX_DIST_FILE; #LUX_CLI LUX_DEV_BIN
+
+
 }
 
 
@@ -298,7 +305,11 @@ function assert_ready(){
 		if [ -n "$BASH_USR_BIN" ]; then
 			QODEPARTY_INSTALL_DIR="$BASH_USR_BIN/qodeparty"
 			LUX_INSTALL_DIR="$QODEPARTY_INSTALL_DIR/lux"
-			[ -d "$LUX_INSTALL_DIR" ] && unstat STATE_LUX_INST_DEF || :
+			LUX_INSTALL_BIN="$LUX_INSTALL_DIR/lux"
+
+			[ -n "$LUX_INSTALL_DIR" ] && [ -d "$LUX_INSTALL_DIR" ] && unstat STATE_LUX_INST_DEF || :
+			[ -n "$LUX_INSTALL_BIN" ] && [ -f "$LUX_INSTALL_BIN" ] && { unstat STATE_LUX_DIST_FILE; unstat STATE_LUX_IBIN_DEF; unstat STATE_LUX_IBIN_FILE; } || :
+
 		else
 			: #printf "Lux home not defined $LUX_HOME \n"
 		fi
@@ -444,7 +455,7 @@ function assert_ready(){
 				repair_home "$LUX_HOME"
 			else
 				wtrace "Cant find Lux Home"
-				lux_make_rc
+			  [ $opt_skip_input -eq 1 ] && lux_make_rc || :
 			fi
 
 			#fatal requires user step
@@ -460,7 +471,7 @@ function assert_ready(){
 		if is_error STATE_LUX_RC_FILE; then
 			warn "RC Files requires PROFILE"
 			#Do you want to make RC FIle?
-			lux_make_rc
+			[ $opt_skip_input -eq 1 ] && lux_make_rc || :
 			#fatal requires user step
 		else
 			: #pptrace "found LUX_RC"
@@ -567,24 +578,139 @@ function assert_ready(){
 			fi
 
 		else
-			ptrace "#"
+			: #ptrace "#"
 		fi
 
 		trace "try Resolve STATE_LUX_INST_WRITE"
 		if is_error STATE_LUX_INST_WRITE; then
 
 
-			if [ -n "$LUX_INSTALL_DIR" ]; then
-				mkdir -p "$LUX_INSTALL_DIR"
+			if [ $opt_skip_input -eq 1 ]; then
+				if [ -n "$LUX_INSTALL_DIR" ]; then
+					mkdir -p "$LUX_INSTALL_DIR"
 
-				if [ ! -d "$LUX_INSTALL_DIR" ]; then
-					wtrace "Cant write to or create bin install dir"
-				else
-					unstat STATE_LUX_INST_WRITE
+					if [ ! -d "$LUX_INSTALL_DIR" ]; then
+						wtrace "Cant write to or create bin install dir"
+					else
+						unstat STATE_LUX_INST_WRITE
+					fi
 				fi
+			else
+				: #skip input should we prompt?
 			fi
 
 		else
-			ptrace "#"
+			: #ptrace "#"
+		fi
+	}
+
+
+	function lux_want_dist(){
+		:
+	}
+
+
+	function lux_want_install(){
+		trace "try Resolve STATE_LUX_IBIN_DEF"
+		if is_error STATE_LUX_IBIN_DEF; then
+
+			if [ -z "$LUX_INSTALL_BIN" ]; then
+
+				#this isnt atomic
+				if [  -n "$BASH_USR_BIN" ]; then
+					repair_binvars "$BASH_USR_BIN"
+				fi
+
+			fi
+
+
+			if [ -n "$LUX_INSTALL_BIN" ]; then
+				unstat STATE_LUX_IBIN_DEF;
+			fi
+
+		fi
+
+
+		trace "try Resolve STATE_LUX_IBIN_FILE"
+
+		if is_error STATE_LUX_IBIN_FILE; then
+			if [ ! -f "$LUX_INSTALL_BIN" ]; then
+
+
+				if [ -n "$LUX_DEV_BIN" ]; then
+					this_exec="$LUX_DEV_BIN/luxbin"
+					this_dist="$ROOT_DIR/dist/lux"
+				fi
+
+
+				if [ ! -f "$this_dist" ]; then
+					wtrace "Distributable not found at $this_dist"
+					if [ -n "$this_exec" ] && [ -f "$this_exec" ]; then
+
+
+							if [[ "$script_entry" =~ "luxbin" ]]; then
+								if [ $opt_skip_input -eq 1 ]; then
+									opt_debug=0;
+									makedist "$this_exec" "nocomments"
+								else
+									: #skip input -- prompt?
+								fi
+							else
+								#probably already installed lol
+								error "Cant compile lux from compiled lux! hehe nice try though! use <luxbin>"
+
+							fi
+
+					else
+					 	error "Cant find luxbin executable! Probably deleted or not installed"
+					 	#could prompt user but this is generally a fatal error
+					fi
+
+				fi
+
+
+				#dist exists
+
+				if [ -f "$this_dist" ]; then
+
+					if [ $opt_skip_input -eq 1 ]; then
+						unstat STATE_LUX_DIST_FILE;
+						#then just copy dist to bin
+						[ -f "$LUX_INSTALL_BIN" ] && cp "$LUX_INSTALL_BIN" "${LUX_INSTALL_BIN}.bak" || :
+						cp "$this_dist" "$LUX_INSTALL_BIN"
+					else
+						: #skip -- prompt?
+					fi
+
+				else
+					warn "Unable to find dist file at $dist_file"
+				fi
+
+				if [ ! -f "$LUX_INSTALL_BIN" ]; then
+					#repair failed
+					error "Repair Failed! Cannot build and install lux exec ($LUX_INSTALL_BIN)"
+				else
+					unstat STATE_LUX_IBIN_FILE;
+					unstat STATE_LUX_DIST_FILE; #dont need dist now
+				fi
+
+			fi
+		else
+			[ -f "$LUX_INSTALL_BIN" ] && {
+				dtrace "Already have LUX IBIN ($LUX_INSTALL_BIN)";
+				unstat STATE_LUX_IBIN_FILE;
+				unstat STATE_LUX_DIST_FILE;
+				}
+		fi
+	}
+
+	function dev_fast_clean(){
+		if [ $opt_dev_mode -eq 0 ]; then
+			info "$ROOT_DIR/dist  $LUX_INSTALL_DIR  $ROOT_DIR/.luxrc"
+			rm -rf "$ROOT_DIR/dist"
+			rm -rf "$LUX_INSTALL_DIR"
+			rm -f "$ROOT_DIR/.luxrc"
+		else
+			error "Fast clean requires [--dev] flag"
 		fi
 	}

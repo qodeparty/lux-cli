@@ -196,9 +196,19 @@
 		echo "$tmp_target"
 	}
 
-	function makebin(){
-		dest_file="${1:-./src/bash/luxbin}"
-		tmp_file=$(search_replace_bash "$dest_file" "$2")
-		mv "$tmp_file" "./lux"
+	function makedist(){
+		dtrace "$ROOT_DIR"
+		build="$(cd $ROOT_DIR && git rev-list HEAD --count).$(date +%s)"
+		wtrace "Lux Dist build is $build"
+
+		src_file="${1:-$ROOT_DIR/src/bash/luxbin}" #this is where main template
+		tmp_file=$(search_replace_bash "$src_file" "$2")
+		dist_file="$ROOT_DIR/dist/lux"
+
+		mkdir -p "$ROOT_DIR/dist"
+		mv "$tmp_file" "$dist_file"
+		#cp "$dist_file" "$dist_file-${build}"
+
 		[ -f "$tmp_file.bak" ] && rm "$tmp_file.bak"
 	}
+

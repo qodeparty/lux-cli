@@ -24,9 +24,9 @@
 			fi
 			case $call in
 				mcli)
-					if [[ "$0" =~ "luxbin" ]]; then
+					if [[ "script_entry" =~ "luxbin" ]]; then
 						opt_debug=0;
-						makebin "$1" "nocomments"
+						makedist "$1" "nocomments"
 						#info "$1 $2"
 						shift;
 					else
@@ -34,6 +34,7 @@
 					fi
 					break;
 				;;
+				fc) dev_fast_clean;;
 				check)  opt_skip_input=0; lux_checkup; ret=$?;;
 				repair) opt_skip_input=1; lux_full_repair; ret=$?;;
 				link)   profile_link;    ret=$?;;

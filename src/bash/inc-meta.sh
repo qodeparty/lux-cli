@@ -150,8 +150,8 @@
 			export BASH_USR_BIN="$BASH_USR_BIN"
 
 			export LUX_HOME="$LUX_HOME"
-			export LUX_DEV_BIN="$LUX_DEV_BIN"
-			export LUX_BIN="$LUX_BIN"
+			export LUX_DEV_BIN="$LUX_DEV_BIN" #cli/dev bin
+			export LUX_BIN="$LUX_BIN" #install bin
 			export LUX_RC="$LUX_RC"
 			export LUX_INST=0
 			export LUX_USER_CONF="$LUX_USER_CONF"
@@ -211,6 +211,8 @@
 
 	function lux_load_rc(){
 		[ -f "$LUX_RC" ] && info "Loading .luxrc file..." && source $LUX_RC && unstat STATE_LUX_RC_FILE || wtrace "Cant load Lux RC. Missing ($LUX_RC). "
+
+		#load rc file now we must have home bin and install
 	}
 
 

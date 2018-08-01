@@ -44,6 +44,7 @@
 	if [ -n "$BASH_USR_BIN" ]; then
 		QODEPARTY_INSTALL_DIR="$BASH_USR_BIN/qodeparty"
 		LUX_INSTALL_DIR="$QODEPARTY_INSTALL_DIR/lux"
+		LUX_INSTALL_BIN="$LUX_INSTALL_DIR/lux"
 	fi
 	#----------------------------------------------
 
