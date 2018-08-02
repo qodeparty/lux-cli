@@ -24,13 +24,13 @@
 			fi
 			case $call in
 				mcli)
-					if [[ "script_entry" =~ "luxbin" ]]; then
+					if [[ "$script_entry" =~ "luxbin" ]]; then
 						opt_debug=0;
 						make_cli_dist "$1" "nocomments"
 						#info "$1 $2"
 						shift;
 					else
-						error "Cant compile lux from compiled lux! hehe nice try though"
+						error "Cant compile lux from compiled lux! hehe nice try though ($script_entry)"
 					fi
 					break;
 				;;
