@@ -139,7 +139,7 @@
 
 
 	function lux_make_js(){
-		info "Generating lux-meta.js file! $LUX_RES"
+		info "Generating lux-meta.js file!"
 		path="$LUX_RES/js"
 		src="${1:-$LUX_META_JS}"
 		js_str="$(lux_js_str)"
@@ -148,8 +148,17 @@
 		rm ${path}/*list.js
 	}
 
+	function lux_rc_end_user_str(){
+		data+=""
+		data="$(cat <<-EOF
+			#!/usr/bin/bash
+		EOF
+		)";
+		echo "$data"
+	}
 
-	function lux_rc_str(){
+
+	function lux_rc_dev_user_str(){
 		data+=""
 		data="$(cat <<-EOF
 			#!/usr/bin/bash
@@ -157,6 +166,8 @@
 			### lux generated config file $(date)
 
 			export BASH_USR_BIN="$BASH_USR_BIN"
+
+			export LUX_DEVELOPER="$LUX_DEVELOPER"
 
 			export LUX_HOME="$LUX_HOME"
 			export LUX_DEV_BIN="$LUX_DEV_BIN" #cli/dev bin
@@ -182,14 +193,16 @@
 
 			if [ -n "\$LUX_BIN" ]; then
 				[[ ! "\$PATH" =~ "\$LUX_BIN" ]] && export PATH=\$PATH:\$LUX_BIN;
+			fi
 
-			else
-				if [ -n "\$LUX_DEV_BIN" ]; then
-					[[ ! "\$PATH" =~ "\$LUX_DEV_BIN" ]] && export PATH=\$PATH:\$LUX_DEV_BIN;
-				fi
+			if [ -n "\$LUX_DEV_BIN" ]; then
+				[[ ! "\$PATH" =~ "\$LUX_DEV_BIN" ]] && export PATH=\$PATH:\$LUX_DEV_BIN;
 			fi
 
 			alias luxcd="cd \$LUX_HOME; ls -la; [ -t 1 ] && printf \"\n${blue}${lambda}Lux directory.${x}\n\"||:"
+			alias luxwww="cd \$LUX_WWW; ls -la; [ -t 1 ] && printf \"\n${blue}${lambda}Lux WWW.${x}\n\"||:"
+			alias luxdev='[ \$LUX_DEVELOPER -eq 0 ] && export LUX_DEVELOPER=1 || export LUX_DEVELOPER=0; lux rrc --quiet; echo \$LUX_DEVELOPER'
+			alias luxup='[ \$LUX_DEVELOPER -eq 0 ] && luxbin cpub --quiet  && lux rrc --quiet && rr && luxdev >/dev/null && echo -e "$blue$lambda$x" || echo "Developer Mode required to publish Lux"'
 			${line}
 		EOF
 		)";
@@ -202,9 +215,9 @@
 		local show src rc_str
 		info "Saving .luxrc file..."
 		src="${LUX_RC}"
-		rc_str="$(lux_rc_str)"
+		rc_str="$(lux_rc_dev_user_str)"
 		echo -e "$rc_str" > ${src}
-		[ -n "$1" ] && lux_dump_rc || :
+		[ $opt_dump -eq 0 ] || [ -n "$1" ] && lux_dump_rc || :
 		#clear any error related to this missing
 		unstat STATE_LUX_RC_FILE #kind of wantt his in the inc-checkup. not sure
 		[ -f "${src}" ] && return 0 || return 1;

@@ -16,6 +16,11 @@
 		# fi
 		lux_load_rc
 
+		#set with --local
+		if [ $opt_local_conf -eq 0 ]; then
+			lux_user_config 'local-conf.json'
+		fi
+
 		if [ -f "$LUX_USER_CONF" ]; then
 			add_var "local_conf:true" "local_conf_path:$LUX_USER_CONF"
 		fi
@@ -28,20 +33,28 @@
 				skip=1; continue
 			fi
 			case $call in
-				mcli) lux_make_cli;	break;;
-				fc) dev_fast_clean;;
-				check)  opt_skip_input=0; lux_checkup; ret=$?;;
-				repair) opt_skip_input=1; lux_repair; ret=$?;;
-				dist)   lux_make_cli && lux_publish_dist;;
-				link)   profile_link;    ret=$?;;
-				unlink) profile_unlink;  ret=$?;;
-				find)   lux_search_files; break;;
-				rc*)    lux_dump_rc;     ret=$?;;
-				mrc*)   lux_make_rc 1;   ret=$?;;
-				home)   quiet 0; echo "$LUX_HOME";;
-				bin)    quiet 0; echo "$LUX_BIN";;
-				mods)   opt_verbose=0; info "=> ${LUX_MODS[*]}";;
-				list)   lux_genlist	;;
+				ch*)      opt_skip_input=0; lux_checkup; ret=$?;;
+				rep*)     opt_skip_input=1; lux_repair; ret=$?;;
+				fc)       dev_fast_clean;;
+				cpub*)    lux_make_cli && lux_publish_dist;;
+				cdist)    lux_make_cli;	break;;
+				link)     profile_link;    ret=$?;;
+				unlink)   profile_unlink;  ret=$?;;
+				find)     lux_search_files; break;;
+				rc)       lux_dump_rc;     ret=$?;;
+				rrc*)     lux_make_rc;     ret=$?;;
+				home)     quiet 0; echo -e "$LUX_HOME";;
+				bin)      quiet 0; echo -e "$LUX_BIN";;
+				cli)      quiet 0; echo -e "$LUX_CLI";;
+				mods)     quiet 0; echo -e "${LUX_MODS[*]}";;
+				self)     quiet 0; echo -e "$0";;
+				here)     quiet 0; echo -e "$BIN_DIR";;
+				rmods)    lux_res_mods;;
+				list)     lux_genlist;;
+				lconf)    lux_user_config 'local-conf.json';;
+				watch)    lux_watch "$1"; shift;;
+				only)     lux_watch_only "$1"; shift;;
+				clean)    lux_clean ;;
 				build|make)
 					case $1 in
 						each) shift; lux_build_each;;
@@ -51,13 +64,16 @@
 					esac
 					break;
 				;;
+				a|all)  lux_build_all;;
+				each)   lux_build_each;;
+				res)    lux_copy_res;;
 				vars)   lux_vars;;
 				vers*)
 					opt_quiet=0
 					lux_version
 					exit 0
 				;;
-				help)   lux_usage;;
+				\?|help)   lux_usage;;
 				skip)   break;;
 				\.)     break;;
 				--*)    break;;

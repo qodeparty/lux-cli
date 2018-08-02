@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 
+
+
+
+
 function lux_make_cli(){
-	if [[ "$script_entry" =~ "luxbin" ]]; then
-		opt_debug=0;
-		make_cli_dist "$1" "nocomments"
-	else
-		error "Cant compile lux from compiled lux! hehe nice try though ($script_entry)"
-	fi
+	require_entry "Cant compile lux from compiled lux! hehe nice try though ($script_entry)"
+	opt_debug=0;
+	make_cli_dist "$1" "nocomments"
 }
 
 
@@ -30,6 +31,8 @@ function lux_search_files(){
 
 
 function lux_publish_dist(){
+	require_entry "Cant publish lux from compiled lux! the universe will collapse! ($script_entry)"
+
 	#need some checks here
 	if [ -n "$LUX_DEV_BIN" ]; then
 
@@ -40,7 +43,7 @@ function lux_publish_dist(){
 
 		[ -f "$LUX_INSTALL_BIN" ] && cp "$LUX_INSTALL_BIN" "${LUX_INSTALL_BIN}.bak" || :
 		cp "$this_dist" "$LUX_INSTALL_BIN"
-		info "dist:$this_dist bin:$LUX_INSTALL_BIN"
+		info "Publishing dist to $LUX_INSTALL_BIN"
 
 	else
 		: #error

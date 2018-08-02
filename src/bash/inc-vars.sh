@@ -20,7 +20,7 @@
 	LUX_DEV=
 	LUX_CSS=
 
-	LUX_META_JS="$LUX_RES/js/lux-meta.js"
+
 
 	#----------------------------------------------
 
@@ -71,6 +71,8 @@
 		LUX_CORE="$LUX_HOME/src/styl/lux"
 		LUX_VARS="$LUX_HOME/src/styl/vars"
 		LUX_UTIL="$LUX_HOME/src/styl/util"
+
+		LUX_META_JS="$LUX_RES/js/lux-meta.js"
 
 		OPT_INCLUDE="--include $LUX_EXT --include $LUX_UTIL --include $LUX_VARS --include $LUX_CORE"
 		OPT_IMPORT="--import $LUX_UTIL --import $LUX_VARS " #order matters

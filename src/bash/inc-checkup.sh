@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-#TODO: the repair steps are too complex they should be atomic -- one repair per error
-#TODO: havent checked cases where the repos arent installed (cli/core/www)
-#TODO: repair for link/unlink
 
 	status_err=()
 	err_vals=()
@@ -241,7 +238,7 @@
 				[ $ret -eq 1 ] && this_res="dne";
 				;;
 			*WRITE*) this_atype='write'
-				[ $ret -eq 0 ] && this_res="write";
+				[ $ret -eq 0 ] && this_res="${blue}writable$x";
 				[ $ret -eq 1 ] && this_res="nwa";
 				;;
 			*) this_atype='unk';;
@@ -555,6 +552,8 @@
 
 			THIS_ROOT="$(dirname $LUX_HOME)"
 
+
+
 			LUX_BUILD="$LUX_HOME/build"
 			LUX_DIST="$LUX_HOME/dist"
 			LUX_RES="$LUX_HOME/www/res"
@@ -568,6 +567,8 @@
 			LUX_CORE="$LUX_HOME/src/styl/lux"
 			LUX_VARS="$LUX_HOME/src/styl/vars"
 			LUX_UTIL="$LUX_HOME/src/styl/util"
+
+			LUX_META_JS="$LUX_RES/js/lux-meta.js"
 
 			OPT_INCLUDE="--include $LUX_EXT --include $LUX_UTIL --include $LUX_VARS --include $LUX_CORE"
 			OPT_IMPORT="--import $LUX_UTIL --import $LUX_VARS " #order matters

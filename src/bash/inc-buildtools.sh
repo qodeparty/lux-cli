@@ -17,7 +17,7 @@
 			OPT_ALL="$OPT_USE $OPT_IMPORT $OPT_INCLUDE"
 			lux_mods
 
-			info "$OPT_USE"
+			trace "$OPT_USE"
 		fi
 	}
 
@@ -38,6 +38,7 @@
 
 	function lux_user_config(){
 		local list this i
+		info "Loading user config..."
 		opt_debug=0
 		if [ "$1" == "rm" ]; then
 			warn "Clearing cached user config."
@@ -71,6 +72,7 @@
 
 	function lux_res_mods(){
 		local i css_path clean this this_file
+		info "Copy modules to res folder..."
 		lux_mods
 		css_path="$LUX_RES/css"
 		clean=${1:-1}
@@ -553,6 +555,7 @@
 		#cp "$dist_file" "$dist_file-${build}"
 
 		[ -f "$tmp_file.bak" ] && rm "$tmp_file.bak"
+		echo $build
 	}
 
 

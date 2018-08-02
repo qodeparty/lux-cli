@@ -12,6 +12,11 @@
 ##  QodeParty (c) 2018
 ##==============================================================================
 
+#TODO: the repair steps are too complex they should be atomic -- one repair per error
+#TODO: havent checked cases where the repos arent installed (cli/core/www)
+#TODO: repair for link/unlink
+#TODO: use printf formartting for usage/docs
+#TODO: create end-user only script without all the dev commands
 
 #-----------------------------------------------------------
 # Script

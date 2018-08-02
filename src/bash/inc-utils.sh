@@ -1,4 +1,19 @@
 #!/usr/bin/env bash
+
+	function require_entry(){
+		if [[ ! "$script_entry" =~ "luxbin" ]]; then
+			error "$1"
+			exit 1
+		fi
+	}
+
+	function require_dev(){
+		if [[ ! "$LUX_DEVELOPER" -eq 0 ]]; then
+			error "$1"
+			exit 1
+		fi
+	}
+
 	function add_var(){
 		ptrace "Adding Vars ${@}"
 		LUX_CLI_VARS+=($@)

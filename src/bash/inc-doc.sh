@@ -16,45 +16,61 @@
 
 	function lux_usage(){
 		local b y g n t p data;
-		b=$blue;y=$orange;g=$green;p=$cyan;
-		s=$sp;t=$tab;n=$nl;sc=$script_id;
+		b=$blue;y=$orange;g=$green;p=$cyan;v=$purple;
+		s=$sp;t=$tab;n=$nl;sc='';
 		data="$(cat <<-EOF
-			${n}
+
 			${b}${blambda}${x}
 			${b}${line//#/}
+			${n}${n}
 			${s}${b}${lambda}Lux Command Line Tool v$script_vers${x}
-			${n}
+
 			${s}${b}User NPM Commands${x}${n}
 			${s}${p}npm run make${x}  npm wrapper for ${y}lux make${x}
 			${s}${p}npm run clean${x} npm wrapper for ${y}lux clean${x}
-			${n}
-			${s}${b}Dev Commands${x}${n}
-			${s}${p}${sc} make   ${x}${t}   generate lux.css and lux.min.css dist
-			${s}${p}${sc} clean  ${x}${t}   clean all generated dirs and files
+
+			${s}${b}Install Commands${x}${n}
+			${s}${p}${sc} check  ${x}${t}   verify install and related repos
+			${s}${p}${sc} repair ${x}${t}   attempt to fix any install problems
 			${s}${p}${sc} link   ${x}${t}   makes lux-cli available on command line
 			${s}${p}${sc} unlink ${x}${t}   remove lux-cli from command line
-			${s}${p}${sc} rcfile ${x}${t}   regenerate .luxrc file in [${y}$HOME${x}]
-			${s}${p}${sc} dev    ${x}${t}   compile styles and copy to dev dist
+			${s}${p}${sc} rc     ${x}${t}   dump .luxrc file to screen
+			${s}${p}${sc} rrc    ${x}${t}   regenerate .luxrc file with current vars
+
+			${s}${b}Build Commands${x}${n}
+			${s}${p}${sc} make   ${x}${t}   generate lux.css and lux.min.css dist
+			${s}${p}${sc} clean  ${x}${t}   clean all generated dirs and files
+			${s}${p}${sc} find ${y}[html]${x}${t}   grep local html,styl and css files
 			${s}${p}${sc} res    ${x}${t}   copy build to dev/res for testing
 			${s}${p}${sc} each   ${x}${t}   generate lux sub module files for testing
-			${s}${p}${sc} watch ${y}t${x}${t}   watch dev files for changes every [${y}t-seconds${x}]
-			${n}
+			${s}${p}${sc} all    ${x}${t}   generate lux module files for testing
+			${s}${p}${sc} watch ${y}[t]${x}${t}   watch dev files for changes every [${y}t-seconds${x}]
+
 			${s}${b}Info Commands${x}${n}
-			${s}${p}${sc} dir    ${x}${t}   output lux home path for use in scripts
-			${s}${p}${sc} vars   ${x}${t}   output lux variables
+			${s}${p}${sc} home   ${x}${t}   output lux home path for use in scripts
+			${s}${p}${sc} bin    ${x}${t}   output lux bin path for use in scripts
 			${s}${p}${sc} mods   ${x}${t}   output lux style mods
-			${n}
+			${s}${p}${sc} vars   ${x}${t}   output lux variables
+			${s}${p}${sc} help   ${x}${t}   output this page
+
 			${s}${b}Flags${x}${n}
 			${s}${p}${sc} --debug${x}${t}   enable debug mode
 			${s}${p}${sc} --info ${x}${t}   enable verbose output
+			${s}${p}${sc} --dump${x}${t}    enable dump to screen mode
 			${s}${p}${sc} --lang ${x}${t}   translate class and ids for specified lang
 			${s}${p}${sc} --12/16${x}${t}   set grid basis to basis-12 or basis-16
-			${n}
+
+			${s}${b}Dev Commands${x}${n}
+			${s}${p}${sc} cdist    ${x}${t}   generate cli executable in ${v}\$LUX_CLI/dist${x}
+			${s}${p}${sc} cpub     ${x}${t}   publish lux binary to ${v}\$LUX_BIN${x} dir
+			${s}${p}${sc} fc       ${x}${t}   dev fast nuke requires --dev flag
+
+
 			${b}${line//#/}${x}
 		EOF
 		)";
 		__print "$data"
-		[ $LUX_INST -eq 1 ] && __print "Lux isnt configured fully" || :
+		[ $LUX_INST -eq 1 ] && __print "${delta}Lux isnt configured fully" || :
 	}
 
 
