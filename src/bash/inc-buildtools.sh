@@ -5,16 +5,20 @@
 	#OPT_USE="--use $LUX_EXT/cli-vars.js --with {lux_build:\"$script_build\",lux_vers:\"$script_vers\"}"
 	function lux_var_refresh(){
 		#lux_align_repos
-		script_vers="$(cd $LUX_HOME;git describe --abbrev=0 --tags)"
-		script_build="$(cd $LUX_HOME;git rev-list HEAD --count)"
-		www_build="$(cd $LUX_WWW;git rev-list HEAD --count)"
+		if [ -d "$LUX_HOME" ]; then
+			script_vers="$(cd $LUX_HOME;git describe --abbrev=0 --tags)"
+			script_build="$(cd $LUX_HOME;git rev-list HEAD --count)"
+			www_build="$(cd $LUX_WWW;git rev-list HEAD --count)"
 
-		OPT_USE="--use $LUX_EXT/pre-vars.js --with $(json_maker)"
+			OPT_USE="--use $LUX_EXT/pre-vars.js --with $(json_maker)"
 
-		[ -f "$LUX_USER_CONF" ] && OPT_USE="$OPT_USE --use $LUX_EXT/pre-config.js" || :
+			[ -f "$LUX_USER_CONF" ] && OPT_USE="$OPT_USE --use $LUX_EXT/pre-config.js" || :
 
-		OPT_ALL="$OPT_USE $OPT_IMPORT $OPT_INCLUDE"
-		lux_mods
+			OPT_ALL="$OPT_USE $OPT_IMPORT $OPT_INCLUDE"
+			lux_mods
+
+			info "$OPT_USE"
+		fi
 	}
 
 
@@ -63,9 +67,6 @@
 
 	}
 
-	function lux_mods(){
-		LUX_MODS=($(find "$LUX_CORE" -type d -printf '%P\n' ))
-	}
 
 
 	function lux_res_mods(){
@@ -553,6 +554,5 @@
 
 		[ -f "$tmp_file.bak" ] && rm "$tmp_file.bak"
 	}
-
 
 

@@ -70,7 +70,7 @@
 
 	include $BIN_DIR/inc-checkup.sh
 
-
+	include $BIN_DIR/inc-api.sh
 
 #-------------------------------------------------------------------------------
 # Dispatch

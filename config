@@ -73,7 +73,7 @@
     function luxconf_inst(){
 			__msg="$(cat <<-EOF
 				\n${__bl}${__ll}Lux CLI${__x}
-				\n\t${__o}${__bx} Removed!${__x} ${__ul}lux.sh${__x} was completely scrubbed from your \$PATH. \n
+				\n\t${__o}${__bx} Removed!${__x} ${__ul}luxbin${__x} was completely scrubbed from your \$PATH. \n
 				\t${__x}To re-install:\n
 				\t  ${__g}source ./config install ${__x}\n\n
 			EOF
@@ -88,7 +88,7 @@
     function luxconf_uninst(){
 			__msg="$(cat <<-EOF
 				\n${__bl}${__ll}Lux CLI${__x}
-				\n\t${__g}${__ch} Added!${__x} ${__ul}lux.sh${__x} was temporarily appended to your \$PATH.
+				\n\t${__g}${__ch} Added!${__x} ${__ul}luxbin${__x} was temporarily appended to your \$PATH.
 				\n\tNow you can do stuff with the Lux CLI. Try one of these commands:\n
 				\t  ${__y}lux link  ${__x}${__gr}# add LUX to your profile ${__x}
 				\t  ${__y}lux build ${__x}${__gr}# build LUX.css

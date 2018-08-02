@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 	function add_var(){
+		ptrace "Adding Vars ${@}"
 		LUX_CLI_VARS+=($@)
 	}
 

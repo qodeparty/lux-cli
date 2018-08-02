@@ -4,6 +4,12 @@
 	[ $opt_dev_mode -eq 0 ] && LUX_RC="./.luxrc" || :
 
 
+	function lux_mods(){
+		LUX_MODS=($(find "$LUX_CORE" -type d -printf '%P\n' ))
+	}
+
+
+
 	function lux_need_align_repos(){
 		[ -z "$LUX_WWW"  ] && missing+=( "$LUX_WWW" ) || :
 		[ -z "$LUX_CLI"  ] && missing+=( "$LUX_CLI" ) || :
@@ -37,6 +43,7 @@
 				#info "$this $res $ret"
 				if [ $ret -eq 0 ]; then
 					#silly "found $this"
+					repo=${repo%/} #strip trail /
 					case "$this" in
 						lux-cli) LUX_CLI="$repo";;
 						lux-www) LUX_WWW="$repo";;
@@ -132,7 +139,7 @@
 
 
 	function lux_make_js(){
-		info "Generating lux-meta.js file!"
+		info "Generating lux-meta.js file! $LUX_RES"
 		path="$LUX_RES/js"
 		src="${1:-$LUX_META_JS}"
 		js_str="$(lux_js_str)"
@@ -153,9 +160,9 @@
 
 			export LUX_HOME="$LUX_HOME"
 			export LUX_DEV_BIN="$LUX_DEV_BIN" #cli/dev bin
-			export LUX_BIN="$LUX_BIN" #install bin
+			export LUX_BIN="$BASH_USR_BIN/qodeparty/lux" #install bin
 			export LUX_RC="$LUX_RC"
-			export LUX_INST=0
+			export LUX_STATUS=0
 			export LUX_USER_CONF="$LUX_USER_CONF"
 
 			export LUX_INSTALL_DIR="$LUX_INSTALL_DIR"
@@ -175,6 +182,7 @@
 
 			if [ -n "\$LUX_BIN" ]; then
 				[[ ! "\$PATH" =~ "\$LUX_BIN" ]] && export PATH=\$PATH:\$LUX_BIN;
+
 			else
 				if [ -n "\$LUX_DEV_BIN" ]; then
 					[[ ! "\$PATH" =~ "\$LUX_DEV_BIN" ]] && export PATH=\$PATH:\$LUX_DEV_BIN;
@@ -195,7 +203,7 @@
 		info "Saving .luxrc file..."
 		src="${LUX_RC}"
 		rc_str="$(lux_rc_str)"
-		echo "$rc_str" > ${src}
+		echo -e "$rc_str" > ${src}
 		[ -n "$1" ] && lux_dump_rc || :
 		#clear any error related to this missing
 		unstat STATE_LUX_RC_FILE #kind of wantt his in the inc-checkup. not sure
@@ -231,13 +239,18 @@
 #-------------------------------------------------------------------------------
 
 	function dev_fast_clean(){
-		if [ $opt_dev_mode -eq 0 ]; then
-			info "$ROOT_DIR/dist  $LUX_INSTALL_DIR  $ROOT_DIR/.luxrc"
-			rm -rf "$ROOT_DIR/dist"
-			rm -rf "$LUX_INSTALL_DIR"
-			rm -f "$ROOT_DIR/.luxrc"
-			profile_unlink #take rc out of profile
+		if [[ "$script_entry" =~ "luxbin" ]]; then
+			if [ $opt_dev_mode -eq 0 ]; then
+				info "$ROOT_DIR/dist  $LUX_INSTALL_DIR  $ROOT_DIR/.luxrc"
+				rm -rf "$ROOT_DIR/dist"
+				rm -rf "$LUX_INSTALL_DIR"
+				rm -f "$ROOT_DIR/.luxrc"
+				profile_unlink #take rc out of profile
+			else
+				error "Fast clean requires [--dev] flag"
+			fi
 		else
-			error "Fast clean requires [--dev] flag"
+			error "Fast clean can only be run using luxbin"
 		fi
 	}
+

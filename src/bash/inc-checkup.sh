@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
 #TODO: the repair steps are too complex they should be atomic -- one repair per error
+#TODO: havent checked cases where the repos arent installed (cli/core/www)
+#TODO: repair for link/unlink
 
 	status_err=()
 	err_vals=()
@@ -126,6 +128,8 @@
 
 		lux_make_rc
 
+		#lux_repair_install_link
+
 		#check_each_state 1
 		len=${#status_err[@]}
 
@@ -202,6 +206,7 @@
 		#note dist var isnt necessary because its derived from ubin
 		#assert_file 		LUX_INSTALL_DIST STATE_LUX_DIST_FILE; #LUX_CLI LUX_DEV_BIN
 
+		assert_link      BASH_PROFILE STATE_BASH_PROF_LINK;
 
 	}
 
@@ -226,6 +231,10 @@
 			*FILE*) this_atype='file'
 				[ $ret -eq 0 ] && this_res="${blue}exists$x";
 				[ $ret -eq 1 ] && this_res="dne";
+				;;
+			*LINK*) this_atype='link'
+				[ $ret -eq 0 ] && this_res="${blue}linked$x";
+				[ $ret -eq 1 ] && this_res="nlk";
 				;;
 			*DIR*) this_atype='dir'
 				[ $ret -eq 0 ] && this_res="${blue}exists$x";
@@ -310,9 +319,14 @@
 		else
 			ret=1
 		fi
-		record_assertion $ret "$1" "$2" true
+		record_assertion $ret "$1" "$2" truealias
 		#dtrace "WRITE check ($1)=> $this [$ret]"
 		return $ret
+	}
+
+	function assert_link(){
+		local this=$1
+		:
 	}
 
 	function assert_infile(){
