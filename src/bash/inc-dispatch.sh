@@ -26,7 +26,7 @@
 				mcli)
 					if [[ "script_entry" =~ "luxbin" ]]; then
 						opt_debug=0;
-						makedist "$1" "nocomments"
+						make_cli_dist "$1" "nocomments"
 						#info "$1 $2"
 						shift;
 					else

@@ -473,3 +473,86 @@
 			fail "Watch failed, missing filename"
 		fi
 	}
+
+#these sed functions need some love but they work
+
+	function search_replace_bash(){
+		target="$1"
+		no_comments="$2"
+		res=($(grep -E '^[[:space:]]*include' $target -n | awk '{print $1 $3}'))
+		lines=()
+		files=()
+		real=()
+
+		tmp_target="${target}.copy"
+
+		cp "$target" "$tmp_target"
+
+		#first pass split up lines into buckets cuz im neurotic
+		for i in ${!res[@]}; do
+			this=${res[$i]}
+			file_ref=${this##*:}
+			line_no=${this%%:*}
+			lines+=("$line_no")
+			files+=("$file_ref")
+			real_file=$(eval echo "$file_ref")
+			real+=("$real_file")
+		done
+
+		#second pass actualize paths and inject file content
+		for i in ${!lines[@]}; do
+			this=${lines[$i]}
+			ref=${files[$i]}
+			val=${real[$i]}
+
+			qref=$(quoteRe "include $ref")
+
+			#info "$ref $qref"
+			insert_wh_replace "$val" "$tmp_target" "$qref"
+
+			#sed -i.bak -e "/${qref}/d" "$target" #delete line number
+			name=$(basename $ref)
+			data="$bline\n## import file:${name%%\.sh*} ##\n$bline"
+
+			sed -i.bak -e "s|.*${qref}.*|${data}|i" $tmp_target
+
+
+			#remore leading shebang after line 15
+			if [ -z "$no_comments" ]; then
+				qref=$(quoteRe "#!")
+			else
+				qref=$(quoteRe "#")
+				qref="^[[:space:]]*${qref}[^#]"
+			fi
+
+			#info "$qref"
+			sed -i.bak -e "15,\${ /${qref}/d }" "$tmp_target"
+
+		done
+
+		#lookahead dont work in sed
+		# s|(?=[[:print:]]+)[[:space:]]*[#].*||i
+		#sed -i.bak -e "15,\${ s/[[:space:]][^\W#]*[#][^#|\n]+.*//i }" "$tmp_target"
+		sed -i.bak "/^$/d" "$tmp_target"
+		echo "$tmp_target"
+	}
+
+	#note:this only makes sense in cli dir
+	function make_cli_dist(){
+		#dtrace "$ROOT_DIR"
+		build="$(cd $ROOT_DIR && git rev-list HEAD --count).$(date +%s)"
+		wtrace "Lux CLI Dist build is $build"
+
+		src_file="${1:-$ROOT_DIR/src/bash/luxbin}" #this is where main template
+		tmp_file=$(search_replace_bash "$src_file" "$2")
+		dist_file="$ROOT_DIR/dist/lux"
+
+		mkdir -p "$ROOT_DIR/dist"
+		mv "$tmp_file" "$dist_file"
+		#cp "$dist_file" "$dist_file-${build}"
+
+		[ -f "$tmp_file.bak" ] && rm "$tmp_file.bak"
+	}
+
+
+

@@ -75,10 +75,12 @@
 					__alias_list+=( "$ndir" )
 				fi
 			done
+			ret=0
 		fi
-
+		opt_dump_col="$blue"
 		dump "${__repo_list[@]}"
 		#dump "${__alias_list[@]}"
+		return $ret
 	}
 
 	#list excludes files starting with _*
@@ -222,4 +224,20 @@
 
 	function lux_set_rc(){
 		[ -f "$1" ] && LUX_RC="$1"
+	}
+
+#-------------------------------------------------------------------------------
+# DEV FC
+#-------------------------------------------------------------------------------
+
+	function dev_fast_clean(){
+		if [ $opt_dev_mode -eq 0 ]; then
+			info "$ROOT_DIR/dist  $LUX_INSTALL_DIR  $ROOT_DIR/.luxrc"
+			rm -rf "$ROOT_DIR/dist"
+			rm -rf "$LUX_INSTALL_DIR"
+			rm -f "$ROOT_DIR/.luxrc"
+			profile_unlink #take rc out of profile
+		else
+			error "Fast clean requires [--dev] flag"
+		fi
 	}

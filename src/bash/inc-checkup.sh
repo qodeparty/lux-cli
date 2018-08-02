@@ -85,7 +85,7 @@ function __env_repair(){
 
 function lux_full_repair(){
 
-	lux_auto_repair
+	#lux_auto_repair
 	lux_checkup
 
 	silly "Lux Repairing..."
@@ -169,15 +169,16 @@ function check_each_state(){
 	assert_defined  LUX_RC         STATE_LUX_RC_DEF     ;
 	assert_file     LUX_RC         STATE_LUX_RC_FILE    ;
 
+	assert_defined  LUX_HOME  		 STATE_LUX_HOME_DEF   ;
+	assert_dir      LUX_HOME  		 STATE_LUX_HOME_DIR   ;
+
 	assert_defined  LUX_BUILD      STATE_LUX_BUILD_DEF  ;
 	assert_defined  LUX_DIST   	   STATE_LUX_DIST_DEF   ;
 
 	assert_defined  LUX_SEARCH_PATH  STATE_LUX_SRC_DEF  ;
-	# ERR_LUX_RCLINK_MISSING
-	assert_defined  LUX_HOME  		 STATE_LUX_HOME_DEF   ;
 
-	assert_defined  LUX_CLI        STATE_LUX_CLI_DEF    ;
-	assert_dir      LUX_CLI        STATE_LUX_CLI_DEF    ;
+	assert_defined  LUX_CLI         STATE_LUX_CLI_DEF    ;
+	assert_dir      LUX_CLI         STATE_LUX_CLI_DIR    ;
 
 	assert_defined  BASH_USR_BIN    STATE_BASH_UBIN_DEF ;
 	assert_inpath   BASH_USR_BIN    STATE_BASH_UBIN_PATH;
@@ -190,6 +191,7 @@ function check_each_state(){
 	assert_file 		LUX_INSTALL_BIN  STATE_LUX_IBIN_FILE;
 
 	#needs LUX_DEV_BIN
+	#note dist var isnt necessary because its derived from ubin
 	assert_file 		LUX_INSTALL_DIST STATE_LUX_DIST_FILE; #LUX_CLI LUX_DEV_BIN
 
 
@@ -199,17 +201,61 @@ function check_each_state(){
 #-------------------------------------------------------------------------------
 # ASSERTIONS
 #-------------------------------------------------------------------------------
+function assertion_type(){
+	local code ret
+	code="$1"
+	ret="$2"
+	case "$1" in
+		*DEF*) this_atype="var"
+			[ $ret -eq 0 ] && this_res="${blue}def$x";
+			[ $ret -eq 1 ] && this_res="undef";
+			;;
+		*PATH*) this_atype='path'
+			[ $ret -eq 0 ] && this_res="${blue}inpath$x";
+			[ $ret -eq 1 ] && this_res="ninpath";
+			;;
+		*FILE*) this_atype='file'
+			[ $ret -eq 0 ] && this_res="${blue}exists$x";
+			[ $ret -eq 1 ] && this_res="dne";
+			;;
+		*DIR*) this_atype='dir'
+			[ $ret -eq 0 ] && this_res="${blue}exists$x";
+			[ $ret -eq 1 ] && this_res="dne";
+			;;
+		*WRITE*) this_atype='write'
+			[ $ret -eq 0 ] && this_res="write";
+			[ $ret -eq 1 ] && this_res="nwa";
+			;;
+		*) this_atype='unk';;
+	esac
+
+}
+
 
 function record_assertion(){
-	local ret val st this name
-	res=$1;this=${!2}; st=$3; val="$4" name=$2;
-	[ $res -eq 1 ] && { status_err+=( "$st" ); err_vals+=( "$name" ); } ||
-										{ status_pass+=( "$st" ); pass_vals+=( "$name:${4:-$this}" ); }
+	local ret val st val name
+	ret=$1;param=${!2}; st=$3; val="$4" name=$2;
+
+	[ $ret -eq 1 ] && { status_err+=( "$st" ); err_vals+=( "$name" ); } ||
+										{ status_pass+=( "$st" ); pass_vals+=( "$name:${val:-$param}" ); }
+
+
+	# if [ $test_only -eq 1 ]; then
+	# 	[ $res -eq 0 ] && __print "${pass}Passed$x | $name ${tab} | ${tab} $ltype | $grey$this$x "    ||:
+	# 	[ $res -eq 1 ] && __print "${fail}Failed$x | $name ${tab} | ${tab} $ltype | $grey2${name}$x " ||:
+	# fi
+	assertion_type $st $ret
 
 	if [ $test_only -eq 1 ]; then
-		[ $res -eq 0 ] && __print "${pass}Passed$x | $st ${tab} |  $grey$this$x "    ||:
-		[ $res -eq 1 ] && __print "${fail}Failed$x | $st ${tab} |  $grey2${name}$x " ||:
+
+		[[ ! "$this_atype" =~ "var" ]]  && param="$this_res";
+		[ $ret -eq 1 ] && param="$grey2--$x" || :
+		[ $ret -eq 1 ] && this_stat="${fail} Fail$x" || this_stat="${pass} Pass$x"
+		#| %-20s  "$st"
+		printf -v "out" "| %-5s | %-5s | \$%-20s | %-60s $x$eol" "${this_stat}" "$this_atype" "$name" "$param"
+		__print "$out"
 	fi
+
 }
 
 function assert_defined(){
@@ -348,8 +394,10 @@ function assert_ready(){
 							if [ -d "$res" ]; then
 								pass "Found search path $res" #"$ret"
 								lux_find_repos "$res"; ret=$?
+
 								[ $ret -eq 0 ] && LUX_SEARCH_PATH="$res" || :
-								#silly "Search path was $res $LUX_SEARCH_PATH"
+
+								dtrace "Search path was $res $LUX_SEARCH_PATH ($ret)"
 								lux_align_repos;
 
 							else
@@ -421,7 +469,7 @@ function assert_ready(){
 			warn "Prompt User for PROFILE or RC"
 			#fatal requires user step
 		else
-			ftrace  "# Not implemented yet (STATE_BASH_PROF_DEF)"
+			ptrace  "[SKIP]# Not implemented yet (STATE_BASH_PROF_DEF)"
 		fi
 	}
 
@@ -462,6 +510,17 @@ function assert_ready(){
 		else
 			: #dtrace "found LUX Home ($LUX_HOME)"
 		fi
+
+		trace "try Resolve STATE_LUX_HOME_DIR"
+		if is_error STATE_LUX_HOME_DEF; then
+
+			if [ -n "$LUX_HOME" ]; then
+				: #in this case the dir doesnt exist but the var does oops
+			else
+				: #even the var doesnt exist here so um
+			fi
+
+		fi
 	}
 
 
@@ -471,6 +530,7 @@ function assert_ready(){
 		if is_error STATE_LUX_RC_FILE; then
 			warn "RC Files requires PROFILE"
 			#Do you want to make RC FIle?
+			#rc file without all needed params just make a dummy one
 			[ $opt_skip_input -eq 1 ] && lux_make_rc || :
 			#fatal requires user step
 		else
@@ -550,9 +610,11 @@ function assert_ready(){
 
 		trace "try Resolve STATE_BASH_UBIN_PATH"
 		if is_error STATE_BASH_UBIN_PATH; then
-			dtrace "PATH missing home bin, create rc file or set env var"
+			wtrace "PATH missing home bin, create rc file or set env var"
+			#cant fix this in current subshell
+			#once user restarts session it will load via rc
 		else
-			: #ptrace "# Not implemented (STATE_BASH_UBIN_PATH)"
+			ptrace "[SKIP] # Not implemented (STATE_BASH_UBIN_PATH)"
 		fi
 
 		trace "try Resolve STATE_BASH_UBIN_DIR"
@@ -651,7 +713,7 @@ function assert_ready(){
 							if [[ "$script_entry" =~ "luxbin" ]]; then
 								if [ $opt_skip_input -eq 1 ]; then
 									opt_debug=0;
-									makedist "$this_exec" "nocomments"
+									make_cli_dist "$this_exec" "nocomments"
 								else
 									: #skip input -- prompt?
 								fi
@@ -686,12 +748,14 @@ function assert_ready(){
 					warn "Unable to find dist file at $dist_file"
 				fi
 
-				if [ ! -f "$LUX_INSTALL_BIN" ]; then
-					#repair failed
-					error "Repair Failed! Cannot build and install lux exec ($LUX_INSTALL_BIN)"
-				else
-					unstat STATE_LUX_IBIN_FILE;
-					unstat STATE_LUX_DIST_FILE; #dont need dist now
+				if [ $opt_skip_input -eq 1 ]; then
+					if [ ! -f "$LUX_INSTALL_BIN" ]; then
+						#repair failed
+						error "Repair Failed! Cannot build and install lux exec ($LUX_INSTALL_BIN)"
+					else
+						unstat STATE_LUX_IBIN_FILE;
+						unstat STATE_LUX_DIST_FILE; #dont need dist now
+					fi
 				fi
 
 			fi
@@ -704,13 +768,3 @@ function assert_ready(){
 		fi
 	}
 
-	function dev_fast_clean(){
-		if [ $opt_dev_mode -eq 0 ]; then
-			info "$ROOT_DIR/dist  $LUX_INSTALL_DIR  $ROOT_DIR/.luxrc"
-			rm -rf "$ROOT_DIR/dist"
-			rm -rf "$LUX_INSTALL_DIR"
-			rm -f "$ROOT_DIR/.luxrc"
-		else
-			error "Fast clean requires [--dev] flag"
-		fi
-	}

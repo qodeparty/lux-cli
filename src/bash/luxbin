@@ -66,6 +66,8 @@
 
 	include $BIN_DIR/inc-meta.sh
 
+	include $BIN_DIR/inc-buildtools.sh
+
 	include $BIN_DIR/inc-checkup.sh
 
 

@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 ##------------------------------------------------------------------------------
-### lux generated config file Tue Jul 31 23:29:10 UTC 2018
+### lux generated config file Thu Aug  2 17:26:38 UTC 2018
 
 export BASH_USR_BIN="/home/qodeninja/.bin"
 
