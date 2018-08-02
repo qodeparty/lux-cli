@@ -16,68 +16,68 @@
 # STAT UTILS
 #-------------------------------------------------------------------------------
 
-function is_error(){
-	[ -z "$1" ] && return 1 || :
-	res=$(in_array "$1" "${status_err[@]}");ret=$?
-	#dtrace "iserror ($1) ($ret) [${status_err[*]}]?"
-	return $ret
-}
+	function is_error(){
+		[ -z "$1" ] && return 1 || :
+		res=$(in_array "$1" "${status_err[@]}");ret=$?
+		#dtrace "iserror ($1) ($ret) [${status_err[*]}]?"
+		return $ret
+	}
 
-function unstat(){
-	local val="-$1"; shift;
-	local list=(${status_err[@]})
-	wtrace "Unsetting status [$val]"
-	val=$(upd_array "$val" "${list[@]}")
-	status_err=($val)
-}
+	function unstat(){
+		local val="-$1"; shift;
+		local list=(${status_err[@]})
+		wtrace "Unsetting status [$val]"
+		val=$(upd_array "$val" "${list[@]}")
+		status_err=($val)
+	}
 
-function dump_results(){
+	function dump_results(){
 
-	trace "$bline"
+		trace "$bline"
 
-	opt_dump_col="$orange"
-	dump "${status_err[@]}"
+		opt_dump_col="$orange"
+		dump "${status_err[@]}"
 
-	#TODO:this is buggy (only works in first pass) cuz we dont have a way to remove the value too... yet
-	#opt_dump_col="$purple"
-	#dump "${err_vals[@]}"
+		#TODO:this is buggy (only works in first pass) cuz we dont have a way to remove the value too... yet
+		#opt_dump_col="$purple"
+		#dump "${err_vals[@]}"
 
-	#trace "$bline"
+		#trace "$bline"
 
-	opt_dump_col="$blue"
-	dump "${status_pass[@]}"
+		opt_dump_col="$blue"
+		dump "${status_pass[@]}"
 
-	#opt_dump_col="$cyan"
-	#dump "${pass_vals[@]}"
-}
+		#opt_dump_col="$cyan"
+		#dump "${pass_vals[@]}"
+	}
 
 
 #-------------------------------------------------------------------------------
 # STATE UTILS
 #-------------------------------------------------------------------------------
 
-function __env_repair(){
-	trace "---env_repair"
-	local arr=(${@})
-	local len=${#arr[@]}
-	if [ $len -gt 0 ]; then
-		for i in ${!arr[@]}; do
-			local this="${arr[$i]}"
-			#check if function exists
-			declare -F "${!this}" &> /dev/null
-			ret=$?
-			if [ $ret -eq 0 ]; then
-				${!this};
+	function __env_repair(){
+		trace "---env_repair"
+		local arr=(${@})
+		local len=${#arr[@]}
+		if [ $len -gt 0 ]; then
+			for i in ${!arr[@]}; do
+				local this="${arr[$i]}"
+				#check if function exists
+				declare -F "${!this}" &> /dev/null
 				ret=$?
-				sleep .02
-				log "$(res $ret) Fixed ($this)?"
-			else
-			 log "$(res $ret) No FX for ($this)"
-			fi
-		done
-	fi
-	return 0
-}
+				if [ $ret -eq 0 ]; then
+					${!this};
+					ret=$?
+					sleep .02
+					log "$(res $ret) Fixed ($this)?"
+				else
+				 log "$(res $ret) No FX for ($this)"
+				fi
+			done
+		fi
+		return 0
+	}
 
 #-------------------------------------------------------------------------------
 # CHECKUPS
@@ -85,262 +85,245 @@ function __env_repair(){
 
 
 
-function lux_checkup(){
+	function lux_checkup(){
 
-	silly "Check Setup!"
+		silly "Check Setup!"
 
-	unset status_err
-	unset err_vals
+		unset status_err
+		unset err_vals
 
-	unset status_pass
-	unset pass_vals
+		unset status_pass
+		unset pass_vals
 
-	#opt_skip_input=0
-	check_each_state 0
+		#opt_skip_input=0
+		check_each_state 0
 
-	lux_auto_repair
+		lux_auto_repair
 
-	#opt_skip_input=1
-	check_each_state 1
+		#opt_skip_input=1
+		check_each_state 1
 
-}
+	}
 
-function lux_repair(){
+	function lux_repair(){
 
-	#lux_auto_repair
-	lux_checkup
+		#lux_auto_repair
+		lux_checkup
 
-	silly "Lux Repairing..."
-	lux_pre_config
+		silly "Lux Repairing..."
+		lux_pre_config
 
-	lux_pre_config_cli
-	lux_pre_config_bash_prof
-	#lux_pre_config_search_path
-	lux_pre_config_lux_home
-	lux_pre_config_set_homevars
-	#repair_home "$LUX_HOME" #only set with rc
-	lux_pre_config_rc_file
-	lux_pre_config_bin_dir
-	lux_pre_install
-	lux_want_install
+		lux_pre_config_cli
+		lux_pre_config_bash_prof
+		#lux_pre_config_search_path
+		lux_pre_config_lux_home
+		lux_pre_config_set_homevars
+		#repair_home "$LUX_HOME" #only set with rc
+		lux_pre_config_rc_file
+		lux_pre_config_bin_dir
+		lux_pre_install
+		lux_want_install
 
-	lux_make_rc
+		lux_make_rc
 
-	#check_each_state 1
-	len=${#status_err[@]}
+		#check_each_state 1
+		len=${#status_err[@]}
 
-	if [ $len -gt 0 ]; then
-		error "Completed with errors"
-		dump_results
-	else
-		info "WELP! ($len)s"
-	fi
+		if [ $len -gt 0 ]; then
+			error "Completed with errors"
+			dump_results
+		else
+			info "WELP! ($len)s"
+		fi
 
-}
-
-
-function lux_auto_repair(){
-	lux_pre_config_cli
-	lux_pre_config_bash_prof
-	#lux_pre_config_search_path
-	lux_pre_config_lux_home
-	lux_pre_config_set_homevars
-	#repair_home "$LUX_HOME" #only set with rc
-	lux_pre_config_rc_file
-	lux_pre_config_bin_dir
-	lux_pre_install
-	lux_want_install
-}
+	}
 
 
+	function lux_auto_repair(){
+		lux_pre_config_cli
+		lux_pre_config_bash_prof
+		#lux_pre_config_search_path
+		lux_pre_config_lux_home
+		lux_pre_config_set_homevars
+		#repair_home "$LUX_HOME" #only set with rc
+		lux_pre_config_rc_file
+		lux_pre_config_bin_dir
+		lux_pre_install
+		lux_want_install
+	}
 
 
 
-function check_each_state(){
+	function check_each_state(){
 
-	test_only="${1:-1}"
+		test_only="${1:-1}"
 
-	[ $test_only -eq 0 ] && dtrace "TEST ONLY"
+		[ $test_only -eq 0 ] && dtrace "TEST ONLY"
 
-	#[ -z "$BIN_DIR" ] && status+=( ERR_DBIN_UNDEF )  || status_pass+=( DBIN_DEF )
-	status_err=()
-	err_vals=()
+		#[ -z "$BIN_DIR" ] && status+=( ERR_DBIN_UNDEF )  || status_pass+=( DBIN_DEF )
+		status_err=()
+		err_vals=()
 
-	status_pass=()
-	pass_vals=()
+		status_pass=()
+		pass_vals=()
 
-	assert_defined  LUX_DEV_BIN    STATE_LUX_DBIN_DEF   ;
-	assert_inpath   LUX_DEV_BIN		 STATE_LUX_DBIN_PATH	;
+		assert_defined  LUX_DEV_BIN    STATE_LUX_DBIN_DEF   ;
+		assert_inpath   LUX_DEV_BIN		 STATE_LUX_DBIN_PATH	;
 
-	assert_defined  BASH_PROFILE   STATE_BASH_PROF_DEF  ;
-	assert_defined  BASH_RC        STATE_BASH_RC_DEF    ;
-
-
-	assert_defined  LUX_RC         STATE_LUX_RC_DEF     ;
-	assert_file     LUX_RC         STATE_LUX_RC_FILE    ;
-
-	assert_defined  LUX_HOME  		 STATE_LUX_HOME_DEF   ;
-	assert_dir      LUX_HOME  		 STATE_LUX_HOME_DIR   ;
-
-	assert_defined  LUX_BUILD      STATE_LUX_BUILD_DEF  ;
-	assert_defined  LUX_DIST   	   STATE_LUX_DIST_DEF   ;
-
-	assert_defined  LUX_SEARCH_PATH  STATE_LUX_SRC_DEF  ;
-
-	assert_defined  LUX_CLI         STATE_LUX_CLI_DEF    ;
-	assert_dir      LUX_CLI         STATE_LUX_CLI_DIR    ;
-
-	assert_defined  BASH_USR_BIN    STATE_BASH_UBIN_DEF ;
-	assert_inpath   BASH_USR_BIN    STATE_BASH_UBIN_PATH;
-	assert_dir      BASH_USR_BIN    STATE_BASH_UBIN_DIR ;
-
-	assert_defined  LUX_INSTALL_DIR  STATE_LUX_INST_DEF ;
-	assert_writable LUX_INSTALL_DIR  STATE_LUX_INST_WRITE;
-
-	assert_defined  LUX_INSTALL_BIN  STATE_LUX_IBIN_DEF;
-	assert_file 		LUX_INSTALL_BIN  STATE_LUX_IBIN_FILE;
-
-	#needs LUX_DEV_BIN
-	#note dist var isnt necessary because its derived from ubin
-	#assert_file 		LUX_INSTALL_DIST STATE_LUX_DIST_FILE; #LUX_CLI LUX_DEV_BIN
+		assert_defined  BASH_PROFILE   STATE_BASH_PROF_DEF  ;
+		assert_defined  BASH_RC        STATE_BASH_RC_DEF    ;
 
 
-}
+		assert_defined  LUX_RC         STATE_LUX_RC_DEF     ;
+		assert_file     LUX_RC         STATE_LUX_RC_FILE    ;
+
+		assert_defined  LUX_HOME  		 STATE_LUX_HOME_DEF   ;
+		assert_dir      LUX_HOME  		 STATE_LUX_HOME_DIR   ;
+
+		assert_defined  LUX_BUILD      STATE_LUX_BUILD_DEF  ;
+		assert_defined  LUX_DIST   	   STATE_LUX_DIST_DEF   ;
+
+		assert_defined  LUX_SEARCH_PATH  STATE_LUX_SRC_DEF  ;
+
+		assert_defined  LUX_CLI         STATE_LUX_CLI_DEF    ;
+		assert_dir      LUX_CLI         STATE_LUX_CLI_DIR    ;
+
+		assert_defined  BASH_USR_BIN    STATE_BASH_UBIN_DEF ;
+		assert_inpath   BASH_USR_BIN    STATE_BASH_UBIN_PATH;
+		assert_dir      BASH_USR_BIN    STATE_BASH_UBIN_DIR ;
+
+		assert_defined  LUX_INSTALL_DIR  STATE_LUX_INST_DEF ;
+		assert_writable LUX_INSTALL_DIR  STATE_LUX_INST_WRITE;
+
+		assert_defined  LUX_INSTALL_BIN  STATE_LUX_IBIN_DEF;
+		assert_file 		LUX_INSTALL_BIN  STATE_LUX_IBIN_FILE;
+
+		#needs LUX_DEV_BIN
+		#note dist var isnt necessary because its derived from ubin
+		#assert_file 		LUX_INSTALL_DIST STATE_LUX_DIST_FILE; #LUX_CLI LUX_DEV_BIN
+
+
+	}
 
 
 #-------------------------------------------------------------------------------
 # ASSERTIONS
 #-------------------------------------------------------------------------------
-function assertion_type(){
-	local code ret
-	code="$1"
-	ret="$2"
-	case "$1" in
-		*DEF*) this_atype="var"
-			[ $ret -eq 0 ] && this_res="${blue}def$x";
-			[ $ret -eq 1 ] && this_res="undef";
-			;;
-		*PATH*) this_atype='path'
-			[ $ret -eq 0 ] && this_res="${blue}inpath$x";
-			[ $ret -eq 1 ] && this_res="ninpath";
-			;;
-		*FILE*) this_atype='file'
-			[ $ret -eq 0 ] && this_res="${blue}exists$x";
-			[ $ret -eq 1 ] && this_res="dne";
-			;;
-		*DIR*) this_atype='dir'
-			[ $ret -eq 0 ] && this_res="${blue}exists$x";
-			[ $ret -eq 1 ] && this_res="dne";
-			;;
-		*WRITE*) this_atype='write'
-			[ $ret -eq 0 ] && this_res="write";
-			[ $ret -eq 1 ] && this_res="nwa";
-			;;
-		*) this_atype='unk';;
-	esac
 
-}
+	function assertion_type(){
+		local code ret
+		code="$1"
+		ret="$2"
+		case "$1" in
+			*DEF*) this_atype="var"
+				[ $ret -eq 0 ] && this_res="${blue}def$x";
+				[ $ret -eq 1 ] && this_res="undef";
+				;;
+			*PATH*) this_atype='path'
+				[ $ret -eq 0 ] && this_res="${blue}inpath$x";
+				[ $ret -eq 1 ] && this_res="ninpath";
+				;;
+			*FILE*) this_atype='file'
+				[ $ret -eq 0 ] && this_res="${blue}exists$x";
+				[ $ret -eq 1 ] && this_res="dne";
+				;;
+			*DIR*) this_atype='dir'
+				[ $ret -eq 0 ] && this_res="${blue}exists$x";
+				[ $ret -eq 1 ] && this_res="dne";
+				;;
+			*WRITE*) this_atype='write'
+				[ $ret -eq 0 ] && this_res="write";
+				[ $ret -eq 1 ] && this_res="nwa";
+				;;
+			*) this_atype='unk';;
+		esac
+
+	}
+
+	function record_assertion(){
+		local ret val st val name
+		ret=$1;param=${!2}; st=$3; val="$4" name=$2;
+
+		[ $ret -eq 1 ] && { status_err+=( "$st" ); err_vals+=( "$name" ); } ||
+											{ status_pass+=( "$st" ); pass_vals+=( "$name:${val:-$param}" ); }
 
 
-function record_assertion(){
-	local ret val st val name
-	ret=$1;param=${!2}; st=$3; val="$4" name=$2;
+		# if [ $test_only -eq 1 ]; then
+		# 	[ $res -eq 0 ] && __print "${pass}Passed$x | $name ${tab} | ${tab} $ltype | $grey$this$x "    ||:
+		# 	[ $res -eq 1 ] && __print "${fail}Failed$x | $name ${tab} | ${tab} $ltype | $grey2${name}$x " ||:
+		# fi
+		assertion_type $st $ret
 
-	[ $ret -eq 1 ] && { status_err+=( "$st" ); err_vals+=( "$name" ); } ||
-										{ status_pass+=( "$st" ); pass_vals+=( "$name:${val:-$param}" ); }
+		if [ $test_only -eq 1 ]; then
 
+			[[ ! "$this_atype" =~ "var" ]]  && param="$this_res";
+			[ $ret -eq 1 ] && param="$grey2--$x" || :
+			[ $ret -eq 1 ] && this_stat="${fail} Fail$x" || this_stat="${pass} Pass$x"
+			#| %-20s  "$st"
+			printf -v "out" "| %-5s | %-5s | \$%-20s | %-60s $x$eol" "${this_stat}" "$this_atype" "$name" "$param"
+			__print "$out"
+		fi
 
-	# if [ $test_only -eq 1 ]; then
-	# 	[ $res -eq 0 ] && __print "${pass}Passed$x | $name ${tab} | ${tab} $ltype | $grey$this$x "    ||:
-	# 	[ $res -eq 1 ] && __print "${fail}Failed$x | $name ${tab} | ${tab} $ltype | $grey2${name}$x " ||:
-	# fi
-	assertion_type $st $ret
+	}
 
-	if [ $test_only -eq 1 ]; then
+	function assert_defined(){
+		local ret this; this=${!1};
+		[ -z "$this" ] && ret=1 || ret=0; record_assertion $ret "$1" "$2"
+		#dtrace "VAR check ($1)=> $this [$ret]"
+		return $ret
+	}
 
-		[[ ! "$this_atype" =~ "var" ]]  && param="$this_res";
-		[ $ret -eq 1 ] && param="$grey2--$x" || :
-		[ $ret -eq 1 ] && this_stat="${fail} Fail$x" || this_stat="${pass} Pass$x"
-		#| %-20s  "$st"
-		printf -v "out" "| %-5s | %-5s | \$%-20s | %-60s $x$eol" "${this_stat}" "$this_atype" "$name" "$param"
-		__print "$out"
-	fi
+	function assert_file(){
+		local ret this; this=${!1};
+		[ ! -f "$this" ] && ret=1 || ret=0; record_assertion $ret "$1" "$2" true
+		return $ret
+	}
 
-}
+	function assert_dir(){
+		local ret this; this=${!1};
+		if [ -n "$this" ]; then
+		 [ ! -d "$this" ] && ret=1 || ret=0;
+		else
+			ret=1
+		fi
+		record_assertion $ret "$1" "$2" true
+		#silly "DIR check ($1)=> $this [$ret]"
+		return $ret
+	}
 
-function assert_defined(){
-	local ret this; this=${!1};
-	[ -z "$this" ] && ret=1 || ret=0; record_assertion $ret "$1" "$2"
-	#dtrace "VAR check ($1)=> $this [$ret]"
-	return $ret
-}
+	function assert_inpath(){
+		local ret this; this=${!1};
+		if [ -n "$this" ]; then
+		 [[ ! "$PATH" =~ "$this" ]] && ret=1 || ret=0;
+		else
+			ret=1
+		fi
+		record_assertion $ret "$1" "$2" true
+		#silly "PATH check ($1)=> $this [$ret]"
+		return $ret
+	}
 
-function assert_file(){
-	local ret this; this=${!1};
-	[ ! -f "$this" ] && ret=1 || ret=0; record_assertion $ret "$1" "$2" true
-	return $ret
-}
+	function assert_writable(){
+		local ret this; this=${!1};
+		if [ -n "$this" ]; then
+			[ ! -w "$this" ] && ret=1 || ret=0;
+		else
+			ret=1
+		fi
+		record_assertion $ret "$1" "$2" true
+		#dtrace "WRITE check ($1)=> $this [$ret]"
+		return $ret
+	}
 
-function assert_dir(){
-	local ret this; this=${!1};
-	if [ -n "$this" ]; then
-	 [ ! -d "$this" ] && ret=1 || ret=0;
-	else
-		ret=1
-	fi
-	record_assertion $ret "$1" "$2" true
-	#silly "DIR check ($1)=> $this [$ret]"
-	return $ret
-}
+	function assert_infile(){
+		local this=$1
+		:
+	}
 
-function assert_inpath(){
-	local ret this; this=${!1};
-	if [ -n "$this" ]; then
-	 [[ ! "$PATH" =~ "$this" ]] && ret=1 || ret=0;
-	else
-		ret=1
-	fi
-	record_assertion $ret "$1" "$2" true
-	#silly "PATH check ($1)=> $this [$ret]"
-	return $ret
-}
-
-function assert_writable(){
-	local ret this; this=${!1};
-	if [ -n "$this" ]; then
-		[ ! -w "$this" ] && ret=1 || ret=0;
-	else
-		ret=1
-	fi
-	record_assertion $ret "$1" "$2" true
-	#dtrace "WRITE check ($1)=> $this [$ret]"
-	return $ret
-}
-
-function assert_infile(){
-	local this=$1
-	:
-}
-
-function assert_ready(){
-	local this=$1
-	:
-}
-#STATE_LUX_CONFIG_READY
-
-#STATE_LUX_RC_CREATED
-
-#STATE_LUX_RC_LINK
-
-#STATE_LUX_USER_MODE
-
-#STATE_LUX_USER_BUILD
-
-#STATE_LUX_DEV_MODE
-
-#STATE_LUX_DEV_DEPLOY
-
-#STATE_LUX_UNINSTALL
+	function assert_ready(){
+		local this=$1
+		:
+	}
 
 
 #-------------------------------------------------------------------------------
@@ -364,7 +347,7 @@ function assert_ready(){
 			LUX_INSTALL_BIN="$LUX_INSTALL_DIR/lux"
 			dtrace "Repair BINVARS unsets"
 			[ -n "$LUX_INSTALL_DIR" ] && [ -d "$LUX_INSTALL_DIR" ] && unstat STATE_LUX_INST_DEF || :
-			[ -n "$LUX_INSTALL_BIN" ] && [ -f "$LUX_INSTALL_BIN" ] && { unstat STATE_LUX_DIST_FILE; unstat STATE_LUX_IBIN_DEF; unstat STATE_LUX_IBIN_FILE; } || :
+			[ -n "$LUX_INSTALL_BIN" ] && [ -f "$LUX_INSTALL_BIN" ] && { unstat STATE_LUX_IBIN_DEF; unstat STATE_LUX_IBIN_FILE; } || :
 
 		else
 			: #printf "Lux home not defined $LUX_HOME \n"
@@ -643,7 +626,13 @@ function assert_ready(){
 		trace "try Resolve STATE_LUX_INST_DEF"
 		if is_error STATE_LUX_INST_DEF; then
 
-			repair_binvars "$BASH_USR_BIN"
+
+			if [ -z "$LUX_INSTALL_BIN" ]; then
+				#this isnt atomic
+				if [  -n "$BASH_USR_BIN" ]; then
+					repair_binvars "$BASH_USR_BIN"
+				fi
+			fi
 
 			if [ -z "$QODEPARTY_INSTALL_DIR" ] || [ -z "$LUX_INSTALL_DIR" ]; then
 				wtrace "Missing Dirs"
@@ -747,7 +736,7 @@ function assert_ready(){
 				if [ -f "$this_dist" ]; then
 
 					if [ $opt_skip_input -eq 1 ]; then
-						unstat STATE_LUX_DIST_FILE;
+						#unstat STATE_LUX_DIST_FILE;
 						#then just copy dist to bin
 						[ -f "$LUX_INSTALL_BIN" ] && cp "$LUX_INSTALL_BIN" "${LUX_INSTALL_BIN}.bak" || :
 						cp "$this_dist" "$LUX_INSTALL_BIN"
@@ -765,7 +754,7 @@ function assert_ready(){
 						error "Repair Failed! Cannot build and install lux exec ($LUX_INSTALL_BIN)"
 					else
 						unstat STATE_LUX_IBIN_FILE;
-						unstat STATE_LUX_DIST_FILE; #dont need dist now
+						#unstat STATE_LUX_DIST_FILE; #dont need dist now
 					fi
 				fi
 
@@ -774,7 +763,7 @@ function assert_ready(){
 			if [ -f "$LUX_INSTALL_BIN" ]; then
 				dtrace "Already have LUX IBIN ($LUX_INSTALL_BIN)";
 				unstat STATE_LUX_IBIN_FILE;
-				unstat STATE_LUX_DIST_FILE;
+				#unstat STATE_LUX_DIST_FILE;
 				dtrace "Final bin check!"
 			fi
 		fi
