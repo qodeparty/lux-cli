@@ -36,7 +36,7 @@
 				;;
 				fc) dev_fast_clean;;
 				check)  opt_skip_input=0; lux_checkup; ret=$?;;
-				repair) opt_skip_input=1; lux_full_repair; ret=$?;;
+				repair) opt_skip_input=1; lux_repair; ret=$?;;
 				link)   profile_link;    ret=$?;;
 				unlink) profile_unlink;  ret=$?;;
 				rc*)    lux_dump_rc;     ret=$?;;

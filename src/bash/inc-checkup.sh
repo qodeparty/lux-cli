@@ -42,13 +42,13 @@ function dump_results(){
 	#opt_dump_col="$purple"
 	#dump "${err_vals[@]}"
 
-	trace "$bline"
+	#trace "$bline"
 
 	opt_dump_col="$blue"
 	dump "${status_pass[@]}"
 
-	opt_dump_col="$cyan"
-	dump "${pass_vals[@]}"
+	#opt_dump_col="$cyan"
+	#dump "${pass_vals[@]}"
 }
 
 
@@ -83,7 +83,29 @@ function __env_repair(){
 # CHECKUPS
 #-------------------------------------------------------------------------------
 
-function lux_full_repair(){
+
+
+function lux_checkup(){
+
+	silly "Check Setup!"
+
+	unset status_err
+	unset err_vals
+
+	unset status_pass
+	unset pass_vals
+
+	#opt_skip_input=0
+	check_each_state 0
+
+	lux_auto_repair
+
+	#opt_skip_input=1
+	check_each_state 1
+
+}
+
+function lux_repair(){
 
 	#lux_auto_repair
 	lux_checkup
@@ -104,6 +126,16 @@ function lux_full_repair(){
 
 	lux_make_rc
 
+	#check_each_state 1
+	len=${#status_err[@]}
+
+	if [ $len -gt 0 ]; then
+		error "Completed with errors"
+		dump_results
+	else
+		info "WELP! ($len)s"
+	fi
+
 }
 
 
@@ -119,28 +151,6 @@ function lux_auto_repair(){
 	lux_pre_install
 	lux_want_install
 }
-
-
-
-function lux_checkup(){
-
-	silly "Check Setup!"
-
-	unset status_err
-	unset err_vals
-
-	unset status_pass
-	unset pass_vals
-
-
-	check_each_state 0
-	lux_auto_repair
-	check_each_state 1
-
-}
-
-
-
 
 
 
@@ -192,7 +202,7 @@ function check_each_state(){
 
 	#needs LUX_DEV_BIN
 	#note dist var isnt necessary because its derived from ubin
-	assert_file 		LUX_INSTALL_DIST STATE_LUX_DIST_FILE; #LUX_CLI LUX_DEV_BIN
+	#assert_file 		LUX_INSTALL_DIST STATE_LUX_DIST_FILE; #LUX_CLI LUX_DEV_BIN
 
 
 }
@@ -352,7 +362,7 @@ function assert_ready(){
 			QODEPARTY_INSTALL_DIR="$BASH_USR_BIN/qodeparty"
 			LUX_INSTALL_DIR="$QODEPARTY_INSTALL_DIR/lux"
 			LUX_INSTALL_BIN="$LUX_INSTALL_DIR/lux"
-
+			dtrace "Repair BINVARS unsets"
 			[ -n "$LUX_INSTALL_DIR" ] && [ -d "$LUX_INSTALL_DIR" ] && unstat STATE_LUX_INST_DEF || :
 			[ -n "$LUX_INSTALL_BIN" ] && [ -f "$LUX_INSTALL_BIN" ] && { unstat STATE_LUX_DIST_FILE; unstat STATE_LUX_IBIN_DEF; unstat STATE_LUX_IBIN_FILE; } || :
 
@@ -693,6 +703,7 @@ function assert_ready(){
 		fi
 
 
+
 		trace "try Resolve STATE_LUX_IBIN_FILE"
 
 		if is_error STATE_LUX_IBIN_FILE; then
@@ -760,11 +771,12 @@ function assert_ready(){
 
 			fi
 		else
-			[ -f "$LUX_INSTALL_BIN" ] && {
+			if [ -f "$LUX_INSTALL_BIN" ]; then
 				dtrace "Already have LUX IBIN ($LUX_INSTALL_BIN)";
 				unstat STATE_LUX_IBIN_FILE;
 				unstat STATE_LUX_DIST_FILE;
-				}
+				dtrace "Final bin check!"
+			fi
 		fi
 	}
 
