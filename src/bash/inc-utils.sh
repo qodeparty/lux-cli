@@ -19,7 +19,7 @@
 		LUX_CLI_VARS+=($@)
 	}
 
-  function fnmatch(){ case "$2" in $1) return 0 ;; *) return 1 ;; esac ; }
+  #function fnmatch(){ case "$2" in $1) return 0 ;; *) return 1 ;; esac ; }
 	function in_string(){ [ -z "${2##*$1*}" ]; }
 
   function escape_sed_regex(){
@@ -126,11 +126,11 @@
 		return 0
 	}
 
-	function sub_dirs(){
-		local path=$1
-		res=($(find "$path" -type d -printf '%P\n' ))
-		echo "${res[*]}"
-	}
+	# function sub_dirs(){
+	# 	local path=$1
+	# 	res=($(find "$path" -type d -printf '%P\n' ))
+	# 	echo "${res[*]}"
+	# }
 
 	function json_maker(){
 		vars=( ${LUX_CLI_VARS[@]} ${@})

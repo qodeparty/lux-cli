@@ -38,11 +38,18 @@
 				fc)       dev_fast_clean;;
 				cpub*)    lux_make_cli && lux_publish_dist;;
 				cdist)    lux_make_cli;	break;;
+				cphome)   lux_make_cli &&	lux_publish_lux;;
 				link)     profile_link;    ret=$?;;
 				unlink)   profile_unlink;  ret=$?;;
 				find)     lux_search_files; break;;
 				rc)       lux_dump_rc;     ret=$?;;
 				rrc*)     lux_make_rc;     ret=$?;;
+				json)
+					add_var "test:1" "eat:candy"
+					lux_var_refresh
+					json_maker
+					#echo "$OPT_USE"
+					shift;;
 				home)     quiet 0; echo -e "$LUX_HOME";;
 				bin)      quiet 0; echo -e "$LUX_BIN";;
 				cli)      quiet 0; echo -e "$LUX_CLI";;
@@ -64,10 +71,12 @@
 					esac
 					break;
 				;;
+				www)    lux_make_www;;
 				a|all)  lux_build_all;;
 				each)   lux_build_each;;
 				res)    lux_copy_res;;
 				vars)   lux_vars;;
+				gvers)  lux_gen_version;;
 				vers*)
 					opt_quiet=0
 					lux_version

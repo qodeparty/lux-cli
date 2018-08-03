@@ -2,39 +2,7 @@
 
 
 
-	#OPT_USE="--use $LUX_EXT/cli-vars.js --with {lux_build:\"$script_build\",lux_vers:\"$script_vers\"}"
-	function lux_var_refresh(){
-		#lux_align_repos
-		if [ -d "$LUX_HOME" ]; then
-			script_vers="$(cd $LUX_HOME;git describe --abbrev=0 --tags)"
-			script_build="$(cd $LUX_HOME;git rev-list HEAD --count)"
-			www_build="$(cd $LUX_WWW;git rev-list HEAD --count)"
 
-			OPT_USE="--use $LUX_EXT/pre-vars.js --with $(json_maker)"
-
-			[ -f "$LUX_USER_CONF" ] && OPT_USE="$OPT_USE --use $LUX_EXT/pre-config.js" || :
-
-			OPT_ALL="$OPT_USE $OPT_IMPORT $OPT_INCLUDE"
-			lux_mods
-
-			trace "$OPT_USE"
-		fi
-	}
-
-
-	function lux_build_version(){
-		case $1 in
-			www)   [ -n "$LUX_WWW" ]  && echo $(cd $LUX_WWW;git rev-list HEAD --count)  || echo "n/a";;
-			build) [ -n "$LUX_HOME" ] && echo $(cd $LUX_HOME;git rev-list HEAD --count) || echo "n/a";;
-			vers)  [ -n "$LUX_HOME" ] && echo $(cd $LUX_HOME;git describe --abbrev=0 --tags) || echo "n/a";;
-			*)     [ -n "$LUX_HOME" ] && echo $(cd $LUX_HOME;git describe --abbrev=0 --tags --exact-match) || echo "n/a";;
-		esac
-	}
-
-	function lux_version(){
-		lux_var_refresh
-		printf "$script_vers-$script_build"
-	}
 
 	function lux_user_config(){
 		local list this i
@@ -126,10 +94,13 @@
 		local res ret
 		info "Copying resouce and generated files to www..."
 		if [ -d "$LUX_WWW" ]; then
+
 			mkdir -p $LUX_WWW/res/build
 			cp -r $LUX_RES $LUX_WWW
 			cp -r $LUX_HOME/www/test $LUX_WWW
 			cp -r $LUX_HOME/www/index.html $LUX_WWW
+
+			lux_gen_version "$LUX_WWW" #gen version file
 		else
 			error "Problem copying build files"
 		fi
@@ -144,6 +115,7 @@
 		msg="auto build $build_id.$www_id :$msg:"
 		info "Pushing automated build... <$msg>"
 		res=$(cd $LUX_WWW; git add -A .;git commit -m "$msg"; git push origin; ); ret=$?
+		lux_gen_version "$LUX_WWW" #gen version file again after push
 		__print "$res"
 	}
 
@@ -222,6 +194,7 @@
 						silly "Woops!"
 					;;
 			esac
+			lux_gen_version
 			lux_copy_res
 			lux_res_mods
 			lux_genlist
@@ -559,3 +532,15 @@
 	}
 
 
+	function deploy_dist_home(){
+    dist_file="$ROOT_DIR/dist/lux"
+    if [ -d "$LUX_HOME" ]; then
+	    target="$LUX_HOME/bin"
+	    if [ -f "$dist_file" ]; then
+		    mkdir -p "$target"
+		    cp "$dist_file" "$target/lux"
+		    return 0
+		  fi
+		fi
+		return 1
+	}

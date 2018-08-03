@@ -4,6 +4,77 @@
 	[ $opt_dev_mode -eq 0 ] && LUX_RC="./.luxrc" || :
 
 
+	#OPT_USE="--use $LUX_EXT/cli-vars.js --with {lux_build:\"$script_build\",lux_vers:\"$script_vers\"}"
+	function lux_var_refresh(){
+		#lux_align_repos
+		if [ -d "$LUX_HOME" ]; then
+
+			lux_gen_load
+
+			OPT_USE="--use $LUX_EXT/pre-vars.js --with $(json_maker)"
+
+			[ -f "$LUX_USER_CONF" ] && OPT_USE="$OPT_USE --use $LUX_EXT/pre-config.js" || :
+
+			OPT_ALL="$OPT_USE $OPT_IMPORT $OPT_INCLUDE"
+			lux_mods
+
+			#trace "$OPT_USE"
+		fi
+	}
+
+
+	function lux_gen_version(){
+		src="${1:-$LUX_HOME}"
+		dest="$src/build.id"
+		info "Generating build information from Git... ($src)"
+		bvers="$(cd $src;git describe --abbrev=0 --tags)"
+		binc="$(cd $src;git rev-list HEAD --count)"
+		printf "vers:%s\\n" "$bvers" > $dest
+		printf "build:%s\\n" "$binc" >> $dest
+		printf "date:%s\\n" "$(date +%s)" >> $dest
+	}
+
+
+	function lux_gen_load(){
+		src="${1:-$LUX_HOME}"
+		[ -n "$2" ] && prefix='loaded' || prefix='script'; #hot or dry load
+		dest="$src/build.id"
+		if [ -f $dest ]; then
+			while IFS='' read -r line || [[ -n "$line" ]]; do
+				name="${prefix}_${line%%:*}"
+				printf -v "$name" '%s' "${line#*:}"
+			  #wtrace "Text read from file: $name => ${!name}"
+			done < "$dest"
+		fi
+  }
+
+
+	function lux_build_version(){
+		lux_gen_load "$LUX_HOME"
+		case $1 in
+			www)
+				if [ -n "$LUX_WWW" ]; then
+					lux_gen_load "$LUX_WWW" true
+					echo $loaded_build
+				else
+					echo "none"
+				fi
+			;;
+			build) [ -n "$LUX_HOME" ] && echo "$script_build"|| echo "n/a";;
+			vers)  [ -n "$LUX_HOME" ] && echo "$script_vers" || echo "n/a";;
+			*)     [ -n "$LUX_HOME" ] && echo "$script_vers-$script_build" || echo "n/a";;
+		esac
+	}
+
+
+	function lux_version(){
+		#lux_var_refresh
+		lux_gen_load
+		printf "$script_vers-$script_build"
+	}
+
+
+
 	function lux_mods(){
 		LUX_MODS=($(find "$LUX_CORE" -type d -printf '%P\n' ))
 	}
@@ -113,6 +184,7 @@
 
 	#deletes subfiles after compiling
 	function lux_genlist(){
+		lux_gen_version
 		info "Compiling file lists..."
 		#touch "$LUX_RES/js/js_list.js"
 		lux_listfile "js_list" "res/js" "js"
@@ -124,12 +196,12 @@
 	function lux_js_str(){
 		data+=""
 		data="$(cat <<-EOF
-			//// lux generated javascript file $(date)
+			//// lux generated javascript file
 			const LUX_VERSION="$script_vers"
 			const LUX_BUILD="$script_build"
 			const LUX_BASIS="$opt_basis"
 			const LUX_THEME="archxray"
-			const LUX_TIMESTAMP="$(date +%s)"
+			const LUX_TIMESTAMP="$script_date"
 
 			////\n
 		EOF

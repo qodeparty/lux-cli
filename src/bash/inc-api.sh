@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
 
 
-
+function lux_make_www(){
+	opt_debug=0;
+	case $1 in
+		push) shift; lux_copy_www; lux_push_www "$1";;
+		*)    lux_copy_www "$1";;
+	esac
+}
 
 
 function lux_make_cli(){
@@ -48,4 +54,8 @@ function lux_publish_dist(){
 	else
 		: #error
 	fi
+}
+
+function lux_publish_lux(){
+	deploy_dist_home
 }
