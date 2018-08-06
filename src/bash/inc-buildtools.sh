@@ -26,7 +26,7 @@
 				 else
 				 	 warn "Found existing config file (${this//$LUX_HOME/.})."
 				 fi
-				 add_var "local_conf:true" "local_conf_path:$this"
+				 add_var "local_conf:true" "conf_path:$this"
 				 break
 			else
 				 ftrace "Cant find a config file at ($this)$dots"
@@ -40,7 +40,7 @@
 
 	function lux_res_mods(){
 		local i css_path clean this this_file
-		info "Copy modules to res folder..."
+		trace "Copy modules to res folder..."
 		lux_mods
 		css_path="$LUX_RES/css"
 		clean=${1:-1}
@@ -55,7 +55,7 @@
 			fi
 		done
 
-		[ $clean -eq 0 ] && info "Cleaning (${LUX_MODS[*]}) styles" || info "Copying (${LUX_MODS[*]}) styles";
+		[ $clean -eq 0 ] && info "Cleaning (${LUX_MODS[*]}) styles" || trace "Copying (${LUX_MODS[*]}) styles";
 	}
 
 	function lux_prep(){
@@ -100,7 +100,7 @@
 			cp -r $LUX_HOME/www/test $LUX_WWW
 			cp -r $LUX_HOME/www/index.html $LUX_WWW
 
-			lux_gen_version "$LUX_WWW" #gen version file
+			#lux_gen_version "$LUX_WWW" #gen version file
 		else
 			error "Problem copying build files"
 		fi
@@ -115,7 +115,7 @@
 		msg="auto build $build_id.$www_id :$msg:"
 		info "Pushing automated build... <$msg>"
 		res=$(cd $LUX_WWW; git add -A .;git commit -m "$msg"; git push origin; ); ret=$?
-		lux_gen_version "$LUX_WWW" #gen version file again after push
+		#lux_gen_version "$LUX_WWW" #gen version file again after push
 		__print "$res"
 	}
 
@@ -194,7 +194,7 @@
 						silly "Woops!"
 					;;
 			esac
-			lux_gen_version
+			#lux_gen_version
 			lux_copy_res
 			lux_res_mods
 			lux_genlist
@@ -206,7 +206,7 @@
 		mod=$1
 		mode=$2
 		case $mod in
-			lux)  		 [ -z "$mode" ] && val='main' || val="$LUX_CORE";;
+			core)  		 [ -z "$mode" ] && val='main' || val="$LUX_CORE";;
 			util) 		 [ -z "$mode" ] && val='each' || val="$LUX_UTIL";;
 			fx|mixins) [ -z "$mode" ] && val='each' || val="$LUX_UTIL/$mod";;
 			vars)		   [ -z "$mode" ] && val='each' || val="$LUX_VARS";;

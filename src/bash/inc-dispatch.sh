@@ -22,7 +22,7 @@
 		fi
 
 		if [ -f "$LUX_USER_CONF" ]; then
-			add_var "local_conf:true" "local_conf_path:$LUX_USER_CONF"
+			add_var "local_conf:true" "conf_path:$LUX_USER_CONF"
 		fi
 
 		lux_var_refresh
@@ -37,7 +37,7 @@
 				rep*)     opt_skip_input=1; lux_repair; ret=$?;;
 				fc)       dev_fast_clean;;
 				cpub*)    lux_make_cli && lux_publish_dist;;
-				cdist)    lux_make_cli;	break;;
+				cdist)    lux_publish_dist;	break;;
 				cphome)   lux_make_cli &&	lux_publish_lux;;
 				link)     profile_link;    ret=$?;;
 				unlink)   profile_unlink;  ret=$?;;

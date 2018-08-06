@@ -7,18 +7,20 @@
 	#OPT_USE="--use $LUX_EXT/cli-vars.js --with {lux_build:\"$script_build\",lux_vers:\"$script_vers\"}"
 	function lux_var_refresh(){
 		#lux_align_repos
+		trace "lux vars call"
 		if [ -d "$LUX_HOME" ]; then
 
 			lux_gen_load
+			add_var "build:$script_build" "vers:$script_vers"
 
-			OPT_USE="--use $LUX_EXT/pre-vars.js --with $(json_maker)"
+			OPT_USE="--use $LUX_EXT/$JS_VAR_LOADER --with $(json_maker)"
 
-			[ -f "$LUX_USER_CONF" ] && OPT_USE="$OPT_USE --use $LUX_EXT/pre-config.js" || :
+			[ -f "$LUX_USER_CONF" ] && OPT_USE="$OPT_USE --use $LUX_EXT/$JS_CONF_LOADER" || :
 
 			OPT_ALL="$OPT_USE $OPT_IMPORT $OPT_INCLUDE"
 			lux_mods
 
-			#trace "$OPT_USE"
+			#info "$OPT_USE"
 		fi
 	}
 
@@ -26,7 +28,7 @@
 	function lux_gen_version(){
 		src="${1:-$LUX_HOME}"
 		dest="$src/build.id"
-		info "Generating build information from Git... ($src)"
+		trace "Generating build information from Git... ($src)"
 		bvers="$(cd $src;git describe --abbrev=0 --tags)"
 		binc="$(cd $src;git rev-list HEAD --count)"
 		printf "vers:%s\\n" "$bvers" > $dest
@@ -46,6 +48,7 @@
 			  #wtrace "Text read from file: $name => ${!name}"
 			done < "$dest"
 		fi
+
   }
 
 

@@ -552,8 +552,6 @@
 
 			THIS_ROOT="$(dirname $LUX_HOME)"
 
-
-
 			LUX_BUILD="$LUX_HOME/build"
 			LUX_DIST="$LUX_HOME/dist"
 			LUX_RES="$LUX_HOME/www/res"
@@ -561,10 +559,10 @@
 			LUX_INST=1
 
 			LUX_LIB="$LUX_HOME/src/lib"
-			LUX_EXT="$LUX_LIB/ext"
+			LUX_EXT="$LUX_LIB/plugin"
 			LUX_DEFS="$LUX_LIB/defs"
 
-			LUX_CORE="$LUX_HOME/src/styl/lux"
+			LUX_CORE="$LUX_HOME/src/styl/core"
 			LUX_VARS="$LUX_HOME/src/styl/vars"
 			LUX_UTIL="$LUX_HOME/src/styl/util"
 

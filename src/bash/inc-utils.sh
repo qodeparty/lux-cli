@@ -14,10 +14,6 @@
 		fi
 	}
 
-	function add_var(){
-		ptrace "Adding Vars ${@}"
-		LUX_CLI_VARS+=($@)
-	}
 
   #function fnmatch(){ case "$2" in $1) return 0 ;; *) return 1 ;; esac ; }
 	function in_string(){ [ -z "${2##*$1*}" ]; }
@@ -100,15 +96,8 @@
 			*) xfound=1;;
 		esac
 
-		#__print "Val is ($val) Id is ($id)"
+		##trace "$val"
 
-		#in_array $id "${list[@]}"
-		#local found=$?
-		#log "Found ($id)? with x($xfound) vs f($found)"
-
-		#then look for +val -val ?val -- using xfound instead of found
-		#[ $xfound -eq 0 ] && log "Found ($id) in array."
-		#
 		if [[ "$val" =~ ^-.*  ]]; then
 			[ $xfound -eq 0 ] && list=($(pop_array "$id" "${list[@]}"))
 		elif [[ "$val" =~ ^\+.* ]]; then
@@ -121,16 +110,29 @@
 		fi
 
 		val="${list[*]}"
-		#log "new val => $val"
+
 		echo "$val"
 		return 0
 	}
 
-	# function sub_dirs(){
-	# 	local path=$1
-	# 	res=($(find "$path" -type d -printf '%P\n' ))
-	# 	echo "${res[*]}"
-	# }
+
+	function add_var(){
+		local list=($@)
+		ptrace "Adding Vars ${list[*]}"
+		for i in ${!list[@]}; do
+			this="+${list[$i]}"
+			LUX_CLI_VARS=$(upd_array $this ${LUX_CLI_VARS[@]})
+			#trace "hi $val"
+		done
+		#LUX_CLI_VARS=($val)
+	}
+
+
+	function sub_dirs(){
+		local path=$1
+		res=($(find "$path" -type d -printf '%P\n' ))
+		echo "${res[*]}"
+	}
 
 	function json_maker(){
 		vars=( ${LUX_CLI_VARS[@]} ${@})

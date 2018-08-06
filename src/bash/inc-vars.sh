@@ -26,8 +26,11 @@
 
 
 	LUX_MODS=
-	LUX_CLI_VARS=( "build:$script_build" "vers:$script_vers" )
+	LUX_CLI_VARS=
 	LUX_USER_CONF=
+
+	JS_VAR_LOADER="load-vars.js"
+	JS_CONF_LOADER="load-config.js"
 
   #----------------------------------------------
 
@@ -65,10 +68,10 @@
 		LUX_INST=1
 
 		LUX_LIB="$LUX_HOME/src/lib"
-		LUX_EXT="$LUX_LIB/ext"
+		LUX_EXT="$LUX_LIB/plugin"
 		LUX_DEFS="$LUX_LIB/defs"
 
-		LUX_CORE="$LUX_HOME/src/styl/lux"
+		LUX_CORE="$LUX_HOME/src/styl/core"
 		LUX_VARS="$LUX_HOME/src/styl/vars"
 		LUX_UTIL="$LUX_HOME/src/styl/util"
 
