@@ -11,7 +11,7 @@
 		if [ -d "$LUX_HOME" ]; then
 
 			lux_gen_load
-			add_var "build:$script_build" "vers:$script_vers"
+			add_var "build:$script_build" "vers:$script_vers" "branch:$script_branch"
 
 			OPT_USE="--use $LUX_EXT/$JS_VAR_LOADER --with $(json_maker)"
 
@@ -31,8 +31,10 @@
 		trace "Generating build information from Git... ($src)"
 		bvers="$(cd $src;git describe --abbrev=0 --tags)"
 		binc="$(cd $src;git rev-list HEAD --count)"
+		branch="$(cd $src;git rev-parse --abbrev-ref HEAD)"
 		printf "vers:%s\\n" "$bvers" > $dest
 		printf "build:%s\\n" "$binc" >> $dest
+		printf "branch:%s\\n" "$branch" >> $dest
 		printf "date:%s\\n" "$(date +%s)" >> $dest
 	}
 
@@ -85,6 +87,7 @@
 
 
 	function lux_need_align_repos(){
+		trace "NEED ALIGN"
 		[ -z "$LUX_WWW"  ] && missing+=( "$LUX_WWW" ) || :
 		[ -z "$LUX_CLI"  ] && missing+=( "$LUX_CLI" ) || :
 		[ -z "$LUX_DEV"  ] && missing+=( "$LUX_DEV" ) || :
@@ -126,7 +129,7 @@
 						*) silly "found ?? ($this)";;
 					esac
 				else
-					missing+=("Missing:$this")
+					missing+=("Unfound:$this")
 				fi
 			done
 

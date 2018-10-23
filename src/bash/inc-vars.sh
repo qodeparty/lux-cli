@@ -30,7 +30,7 @@
 	LUX_USER_CONF=
 
 	JS_VAR_LOADER="load-vars.js"
-	JS_CONF_LOADER="load-config.js"
+	JS_CONF_LOADER="load-conf.js"
 
   #----------------------------------------------
 

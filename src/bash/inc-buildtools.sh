@@ -160,8 +160,8 @@
 		btype="$2"
 
 		lux_mods
-
-		if [ ${#this} -gt 0 ] && [ -f $this ]; then
+		#info "COMPILE $btype ${#this} $this"
+		if [ ${#this} -gt 0 ] && [ -f "$this" ]; then
 
 			thisd=$(dirname $this)
 			thisb=$(basename $thisd)
@@ -385,13 +385,23 @@
 		while [[ true ]];
 		do
 
-			chsum2=`find $LUX_HOME/src -type f \( -name "*.styl" -o -name "*.css*" -o -name "*.js*" \) -mmin -0.5 -exec md5sum {}  \;`
+			chsum2=`find $LUX_HOME/src -type f \( -name "*.styl" -o -name "*.css*" -o -name "*.js*" \) -mmin -0.3 -exec md5sum {}  \;`
 
 			if [[ $chsum1 != $chsum2 ]] ; then
 
+				res=$(echo "$chsum2")
+				IFS=' ' read -r -a array <<< "$res"
+				this="${array[1]}"
 
-				this="${chsum2#*  }" #not sure why this is two spaces!!?
-				[ ${#this} -gt 0 ] && trace "Change detected $(basename ${this})...";
+				info "${array[0]}";
+
+				#this="${chsum2#*  }" #not sure why this is two spaces!!?
+
+				#that="${this[0]}"
+				#warn "$that <$chsum2>"
+
+				#this=$(echo $chsum2 | tr -d '[:space:]')
+				[ ${#this} -gt 0 ] && warn "Change detected... <${this}>";
 
 				#FIX COMPILE PATHS
 				[[ "$this" =~ ".styl" ]] && res=$(lux_compile "$this") && ret=$? || ret=1;
@@ -405,6 +415,16 @@
 				fi
 
 			fi
+
+
+			# if [[ $chsum1 != $chsum2 ]] ; then
+			# 	res=$(echo "$chsum2")
+			# 	IFS=' ' read -r -a array <<< "$res"
+			# 	trace "${array[0]}"; this="${array[1]}"
+			# 	lux_compile "$this"
+			# 	chsum1=$chsum2
+			# fi
+
 
 			sleep 1
 
