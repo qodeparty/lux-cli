@@ -148,8 +148,8 @@
 		lux_build_all_mods
 		lux_build
 		lux_copy_res
-		lux_res_mods
-		lux_genlist
+		#lux_res_mods
+		
 		lux_copy_www
 	}
 
