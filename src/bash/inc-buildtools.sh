@@ -160,8 +160,8 @@
 		btype="$2"
 
 		lux_mods
-
-		if [ ${#this} -gt 0 ] && [ -f $this ]; then
+		#info "COMPILE $btype ${#this} $this"
+		if [ ${#this} -gt 0 ] && [ -f "$this" ]; then
 
 			thisd=$(dirname $this)
 			thisb=$(basename $thisd)
@@ -261,7 +261,8 @@
 			d="${arr[$i]}"
 			this="$LUX_CORE/$d"
 
-			[ -d "$this" ] && files=($(find $this -type f -name *.styl -printf "%f\n" )) || err="Invalid directory ($d)"
+			#osx find?
+			[ -d "$this" ] && files=($($cmd_find $this -type f -name *.styl -printf "%f\n" )) || err="Invalid directory ($d)"
 
 			if [ -z "$err" ]; then
 
@@ -385,13 +386,23 @@
 		while [[ true ]];
 		do
 
-			chsum2=`find $LUX_HOME/src -type f \( -name "*.styl" -o -name "*.css*" -o -name "*.js*" \) -mmin -0.5 -exec md5sum {}  \;`
+			chsum2=`$cmd_find $LUX_HOME/src -type f \( -name "*.styl" -o -name "*.css*" -o -name "*.js*" \) -mmin -0.3 -exec md5sum {}  \;`
 
 			if [[ $chsum1 != $chsum2 ]] ; then
 
+				res=$(echo "$chsum2")
+				IFS=' ' read -r -a array <<< "$res"
+				this="${array[1]}"
 
-				this="${chsum2#*  }" #not sure why this is two spaces!!?
-				[ ${#this} -gt 0 ] && trace "Change detected $(basename ${this})...";
+				info "${array[0]}";
+
+				#this="${chsum2#*  }" #not sure why this is two spaces!!?
+
+				#that="${this[0]}"
+				#warn "$that <$chsum2>"
+
+				#this=$(echo $chsum2 | tr -d '[:space:]')
+				[ ${#this} -gt 0 ] && warn "Change detected... <${this}>";
 
 				#FIX COMPILE PATHS
 				[[ "$this" =~ ".styl" ]] && res=$(lux_compile "$this") && ret=$? || ret=1;
@@ -405,6 +416,16 @@
 				fi
 
 			fi
+
+
+			# if [[ $chsum1 != $chsum2 ]] ; then
+			# 	res=$(echo "$chsum2")
+			# 	IFS=' ' read -r -a array <<< "$res"
+			# 	trace "${array[0]}"; this="${array[1]}"
+			# 	lux_compile "$this"
+			# 	chsum1=$chsum2
+			# fi
+
 
 			sleep 1
 
@@ -425,7 +446,7 @@
 			do
 
 
-				chsum2=`find $LUX_HOME/src/styl -type f \( -name "$only" \) -mmin -1 -exec md5sum {}  \;`
+				chsum2=`$cmd_find $LUX_HOME/src/styl -type f \( -name "$only" \) -mmin -1 -exec md5sum {}  \;`
 				if [[ $chsum1 != $chsum2 ]] ; then
 					this="${chsum2#*  }" #not sure why this is two spaces!!?
 
@@ -525,6 +546,9 @@
 
 		mkdir -p "$ROOT_DIR/dist"
 		mv "$tmp_file" "$dist_file"
+
+		#set permissions
+		chmod +x "$dist_file"
 		#cp "$dist_file" "$dist_file-${build}"
 
 		[ -f "$tmp_file.bak" ] && rm "$tmp_file.bak"

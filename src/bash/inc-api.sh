@@ -47,6 +47,9 @@ function lux_publish_dist(){
 		this_exec="$LUX_DEV_BIN/luxbin"
 		this_dist="$ROOT_DIR/dist/lux"
 
+		#not sure why I need this in OSX
+		mkdir -p "$ROOT_DIR/dist"
+
 		[ -f "$LUX_INSTALL_BIN" ] && cp "$LUX_INSTALL_BIN" "${LUX_INSTALL_BIN}.bak" || :
 		cp "$this_dist" "$LUX_INSTALL_BIN"
 		info "Publishing dist to $LUX_INSTALL_BIN"

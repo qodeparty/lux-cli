@@ -130,7 +130,7 @@
 
 	function sub_dirs(){
 		local path=$1
-		res=($(find "$path" -type d -printf '%P\n' ))
+		res=($($cmd_find "$path" -type d -printf '%P\n' ))
 		echo "${res[*]}"
 	}
 

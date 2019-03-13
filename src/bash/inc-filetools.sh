@@ -4,13 +4,13 @@
 	function find_dirs(){
 		info "Finding repo folders..."
 		warn "This may take a few seconds..."
-		find_cmd="find ${2:-.} -mindepth 1"
-		[[ $1 =~ "1" ]] && find_cmd+=" -maxdepth 2" || :
-		[[ $1 =~ git ]] && find_cmd+=" -name .git"  || :
-		find_cmd+=" -type d ! -path ."
+		this="$cmd_find ${2:-.} -mindepth 1"
+		[[ $1 =~ "1" ]] && this+=" -maxdepth 2" || :
+		[[ $1 =~ git ]] && this+=" -name .git"  || :
+		this+=" -type d ! -path ."
 		awk_cmd="awk -F'.git' '{ sub (\"^./\", \"\", \$1); print \$1 }'"
-		cmd="$find_cmd | $awk_cmd"
-		#__print "$cmd"
+		cmd="$this | $awk_cmd"
+		__print "$cmd"
 		eval "$cmd" #TODO:check if theres a better way to do this
 	}
 

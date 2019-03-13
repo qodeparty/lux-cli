@@ -11,7 +11,7 @@
 		if [ -d "$LUX_HOME" ]; then
 
 			lux_gen_load
-			add_var "build:$script_build" "vers:$script_vers"
+			add_var "build:$script_build" "vers:$script_vers" "branch:$script_branch"
 
 			OPT_USE="--use $LUX_EXT/$JS_VAR_LOADER --with $(json_maker)"
 
@@ -31,8 +31,10 @@
 		trace "Generating build information from Git... ($src)"
 		bvers="$(cd $src;git describe --abbrev=0 --tags)"
 		binc="$(cd $src;git rev-list HEAD --count)"
+		branch="$(cd $src;git rev-parse --abbrev-ref HEAD)"
 		printf "vers:%s\\n" "$bvers" > $dest
 		printf "build:%s\\n" "$binc" >> $dest
+		printf "branch:%s\\n" "$branch" >> $dest
 		printf "date:%s\\n" "$(date +%s)" >> $dest
 	}
 
@@ -79,7 +81,7 @@
 
 
 	function lux_mods(){
-		LUX_MODS=($(find "$LUX_CORE" -type d -printf '%P\n' ))
+		LUX_MODS=($($cmd_find "$LUX_CORE" -type d -printf '%P\n' ))
 	}
 
 
@@ -170,7 +172,7 @@
 		path=$2
 		ftype=$3
 		jsfile="$LUX_HOME/www/res/js/${var}.js"
-		list=($(find "$LUX_HOME/www/${path}" -type f -name "*.${ftype}" ! -name '_*.*' -printf '%P\n' ))
+		list=($($cmd_find "$LUX_HOME/www/${path}" -type f -name "*.${ftype}" ! -name '_*.*' -printf '%P\n' ))
 		len=$((${#list[@]}-1));
 
 		printf "%s\\n" "////found $(($len+1)) $ftype files" > $jsfile

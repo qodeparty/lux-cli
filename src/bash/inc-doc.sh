@@ -23,7 +23,7 @@
 			${b}${blambda}${x}
 			${b}${line//#/}
 			${n}${n}
-			${s}${b}${lambda}Lux Command Line Tool v$script_vers${x}
+			${s}${b}${lambda}Lux Command Line Tool $script_vers${x}
 
 			${s}${b}User NPM Commands${x}${n}
 			${s}${p}npm run make${x}  npm wrapper for ${y}lux make${x}
