@@ -63,7 +63,7 @@
 		src="$1"
 		data+=""
 		data="$(cat <<-EOF
-			/* $script_id $script_vers | $script_lic (c)2018 $script_author | https://qodeparty.com/get/lux */
+			/* $script_id $script_vers | $script_lic (c)2019 $script_author | https://qodeparty.com/get/lux */
 		EOF
 		)";
 		printf '%s\n%s' "$data" "$(cat $src)" > $src

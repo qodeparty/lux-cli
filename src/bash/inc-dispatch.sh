@@ -39,6 +39,8 @@
 				cpub*)    lux_make_cli && lux_publish_dist;;
 				cdist)    lux_publish_dist;	break;;
 				cphome)   lux_make_cli &&	lux_publish_lux;;
+				cgen)     ;;
+				gen)      ;;
 				link)     profile_link;    ret=$?;;
 				unlink)   profile_unlink;  ret=$?;;
 				find)     lux_search_files; break;;

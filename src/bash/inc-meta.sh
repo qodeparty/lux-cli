@@ -50,9 +50,12 @@
 			  #wtrace "Text read from file: $name => ${!name}"
 			done < "$dest"
 		fi
-
   }
 
+  function lux_cli_version(){
+
+  }
+  .0
 
 	function lux_build_version(){
 		lux_gen_load "$LUX_HOME"
