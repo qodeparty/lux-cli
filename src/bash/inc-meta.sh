@@ -11,7 +11,7 @@
 		if [ -d "$LUX_HOME" ]; then
 
 			lux_gen_load
-			add_var "build:$script_build" "vers:$script_vers" "branch:$script_branch"
+			add_var "build:$script_build" "vers:$script_vers" "branch:$script_branch" "basis:$opt_basis"
 
 			OPT_USE="--use $LUX_EXT/$JS_VAR_LOADER --with $(json_maker)"
 
@@ -53,9 +53,9 @@
   }
 
   function lux_cli_version(){
-
+  	:
   }
-  .0
+
 
 	function lux_build_version(){
 		lux_gen_load "$LUX_HOME"
@@ -271,8 +271,8 @@
 				[[ ! "\$PATH" =~ "\$BASH_USR_BIN" ]]  && export PATH=\$PATH:\$BASH_USR_BIN;
 			fi
 
-			if [ -n "\$LUX_BIN" ]; then
-				[[ ! "\$PATH" =~ "\$LUX_BIN" ]] && export PATH=\$PATH:\$LUX_BIN;
+			if [ -n "\$LUX_INSTALL_DIR" ]; then
+				[[ ! "\$PATH" =~ "\$LUX_INSTALL_DIR" ]] && export PATH=\$PATH:\$LUX_INSTALL_DIR;
 			fi
 
 			if [ -n "\$LUX_DEV_BIN" ]; then

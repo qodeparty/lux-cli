@@ -6,18 +6,22 @@
 #----------------------------------------------------
 import os
 import sys
+import shutil
+import stat
+import pkgutil
+
 
 #----------------------------------------------------
 # Const
 #----------------------------------------------------
 
-	IS_PIPED = True if os.fstat(0) != os.fstat(1) else False
-	#CAN_TERM = True if
-	STDERR   = sys.stderr
-	STDOUT   = sys.stdout
+IS_PIPED = True if os.fstat(0) != os.fstat(1) else False
+#CAN_TERM = True if
+STDERR   = sys.stderr
+STDOUT   = sys.stdout
 
 
-	print('Hello, World')
+print('Hello, World')
 
 #----------------------------------------------------
 # API
@@ -36,8 +40,8 @@ cmd_exists = lambda x: shutil.which(x) is not None
 # Main
 #----------------------------------------------------
 
-	def main():
-	  #env()
-	  print( support() )
+def main():
+  env()
+  print( support() )
 
-	if __name__ == "__main__": main()
+if __name__ == "__main__": main()

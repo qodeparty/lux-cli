@@ -51,7 +51,7 @@
 			if [ $clean -eq 0 ]; then
 				[ -f "$that_file" ] && rm -rf "$that_file" || :
 			else
-				[ -f "$this_file" ] && cp "$this_file" "$that_file"  || error "Didnt copy $this"
+				[ -f "$this_file" ] && cp "$this_file" "$that_file"  || error "Didnt copy lux-module file for $this ($that_file)"
 			fi
 		done
 
@@ -279,7 +279,12 @@
 				for j in ${!files[@]}; do
 					f="${files[$j]//\.styl/}" #remove extension
 					[ "$f" = "index" ] && p="${d}" || p="${d}-${f}";
-					silly "Rebuilding ($d-$f) ..."
+					if [[ "$f" =~ ^"${d}" ]]; then
+						 _f="${f/${d}-/}";
+						 p="${d}-${_f}";
+						 silly "File has redundant prefix (correcting...) $p";
+					fi
+					silly "Rebuilding ($p) ..."
 					stylus $OPT_ALL -r "$LUX_CORE/$d/${f}.styl" --out "$LUX_BUILD/${p}.css";ret=$?;
 					status $ret "$res" "Compile Error"
 				done
@@ -511,7 +516,8 @@
 			name=$(basename $ref)
 			data="$bline\n## import file:${name%%\.sh*} ##\n$bline"
 
-			sed -i.bak -e "s|.*${qref}.*|${data}|i" $tmp_target
+			#info "Sed Replace Marker ${qref}"
+			$cmd_sed -i.bak -e "s|.*${qref}.*|${data}|i" $tmp_target
 
 
 			#remore leading shebang after line 15
@@ -523,14 +529,14 @@
 			fi
 
 			#info "$qref"
-			sed -i.bak -e "15,\${ /${qref}/d }" "$tmp_target"
+			$cmd_sed -i.bak -e "15,\${ /${qref}/d }" "$tmp_target"
 
 		done
 
 		#lookahead dont work in sed
 		# s|(?=[[:print:]]+)[[:space:]]*[#].*||i
 		#sed -i.bak -e "15,\${ s/[[:space:]][^\W#]*[#][^#|\n]+.*//i }" "$tmp_target"
-		sed -i.bak "/^$/d" "$tmp_target"
+		$cmd_sed -i.bak "/^$/d" "$tmp_target"
 		echo "$tmp_target"
 	}
 
@@ -552,19 +558,26 @@
 		#cp "$dist_file" "$dist_file-${build}"
 
 		[ -f "$tmp_file.bak" ] && rm "$tmp_file.bak"
-		echo $build
+		echo "CLI Build $build"
 	}
 
 
 	function deploy_dist_home(){
+		info "deploy_dist_home"
+
     dist_file="$ROOT_DIR/dist/lux"
+
     if [ -d "$LUX_HOME" ]; then
 	    target="$LUX_HOME/bin"
 	    if [ -f "$dist_file" ]; then
+	    	silly "Make Target $target"
 		    mkdir -p "$target"
 		    cp "$dist_file" "$target/lux"
 		    return 0
+		  else
+		  	warn "Dist File not exists $dist_file"
 		  fi
 		fi
 		return 1
 	}
+

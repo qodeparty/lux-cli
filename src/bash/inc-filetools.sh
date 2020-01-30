@@ -67,17 +67,24 @@
 		match_st=$(file_marker "str" "${block_lbl}" "${delim}" )
 		match_end=$(file_marker "end" "${block_lbl}" "${delim}" )
 
-		sed -i.bak "/${match_st}/,/${match_end}/d" "$src" #this works on ubuntu
+		$cmd_sed -i.bak "/${match_st}/,/${match_end}/d" "$src" #this works on ubuntu
 		ret=$?
 		#make sure it was removed
-		res=$(file_find_block "$src" "$block_lbl" "${delim}" )
-		ret=$?
 
-		#flip ret, if notfound then success
-		[ $ret -gt 0 ] && ret=0 || ret=1
+		if [ -f "$src" ]; then
+			res=$(file_find_block "$src" "$block_lbl" "${delim}" )
+			ret=$?
 
-		#log "$(res $ret) Cannot Find? (Delete Complete)"
-		rm -f "${src}.bak"
+			#flip ret, if notfound then success
+			[ $ret -gt 0 ] && ret=0 || ret=1
+
+			#log "$(res $ret) Cannot Find? (Delete Complete)"
+			rm -f "${src}.bak"
+		else
+			error "BashRC wasn't found"
+			ret=1;
+		fi
+
 		return $ret
 	}
 
@@ -87,7 +94,7 @@
 		src="$1"; block_lbl="$2"; delim="$3"; ret=1
 		match_st=$(file_marker "str" "${block_lbl}" "${delim}")
 		match_end=$(file_marker "end" "${block_lbl}" "${delim}")
-		res=$(sed -n "/${match_st}/,/${match_end}/p" "$src")
+		res=$($cmd_sed -n "/${match_st}/,/${match_end}/p" "$src")
 		[ -z "$res" ] && ret=1 || ret=0;
 		echo "$res"
 		return $ret;

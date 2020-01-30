@@ -36,6 +36,7 @@
 				ch*)      opt_skip_input=0; lux_checkup; ret=$?;;
 				rep*)     opt_skip_input=1; lux_repair; ret=$?;;
 				fc)       dev_fast_clean;;
+				dist)     lux_make_cli;;
 				cpub*)    lux_make_cli && lux_publish_dist;;
 				cdist)    lux_publish_dist;	break;;
 				cphome)   lux_make_cli &&	lux_publish_lux;;
@@ -99,4 +100,6 @@
 
 		return $ret
 	}
+
+	info "Basis $opt_basis"
 

@@ -42,7 +42,7 @@ function lux_publish_dist(){
 	#need some checks here
 	if [ -n "$LUX_DEV_BIN" ]; then
 
-		LUX_INSTALL_BIN="$LUX_INSTALL_DIR/lux"
+		#LUX_INSTALL_BIN="$LUX_INSTALL_DIR"
 
 		this_exec="$LUX_DEV_BIN/luxbin"
 		this_dist="$ROOT_DIR/dist/lux"
@@ -50,9 +50,11 @@ function lux_publish_dist(){
 		#not sure why I need this in OSX
 		mkdir -p "$ROOT_DIR/dist"
 
-		[ -f "$LUX_INSTALL_BIN" ] && cp "$LUX_INSTALL_BIN" "${LUX_INSTALL_BIN}.bak" || :
-		cp "$this_dist" "$LUX_INSTALL_BIN"
-		info "Publishing dist to $LUX_INSTALL_BIN"
+		[ ! -d "$LUX_INSTALL_DIR" ] && mkdir -p "$LUX_INSTALL_DIR"
+		[ -f "$LUX_INSTALL_DIR" ] && cp "$LUX_INSTALL_DIR" "${LUX_INSTALL_DIR}.bak" || :
+
+		cp "$this_dist" "$LUX_INSTALL_DIR"
+		info "Publishing dist to $LUX_INSTALL_DIR"
 
 	else
 		: #error
@@ -62,3 +64,4 @@ function lux_publish_dist(){
 function lux_publish_lux(){
 	deploy_dist_home
 }
+

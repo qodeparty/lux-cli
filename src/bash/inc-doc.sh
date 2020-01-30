@@ -57,11 +57,12 @@
 			${s}${p}${sc} --debug${x}${t}   enable debug mode
 			${s}${p}${sc} --info ${x}${t}   enable verbose output
 			${s}${p}${sc} --dump${x}${t}    enable dump to screen mode
-			${s}${p}${sc} --lang ${x}${t}   translate class and ids for specified lang
+			${s}${p}${sc} --lang${x}${t}    translate class and ids for specified lang
+			${s}${p}${sc} --local${x}${t}   load local config file local-conf.json
 			${s}${p}${sc} --12/16${x}${t}   set grid basis to basis-12 or basis-16
 
 			${s}${b}Dev Commands${x}${n}
-			${s}${p}${sc} cdist    ${x}${t}   generate cli executable in ${v}\$LUX_CLI/dist${x}
+			${s}${p}${sc} dist     ${x}${t}   generate cli executable in ${v}\$LUX_CLI/dist${x}
 			${s}${p}${sc} cpub     ${x}${t}   publish lux binary to ${v}\$LUX_BIN${x} dir
 			${s}${p}${sc} fc       ${x}${t}   dev fast nuke requires --dev flag
 

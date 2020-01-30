@@ -389,7 +389,8 @@
 				#reset_user_data
 				  sleep 0.2
 					#clear
-					res=$(prompt_path "Where should Lux search for Repos ex: \$blue\$default\$x" "Search for Lux repos in" "$HOME/src");ret=$?
+					[ -n "$MY_REPOS" ] && [ -d "$MY_REPOS" ] && TEST_REPO="$MY_REPOS" || TEST_REPO="$HOME/code"
+					res=$(prompt_path "Where should Lux search for Repos ex: \$blue\$default\$x" "Search for Lux repos in" "$TEST_REPO");ret=$?
 					[ $ret -eq 1 ] && return 1;
 
 					lux_need_align_repos;ret=$?

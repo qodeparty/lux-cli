@@ -58,6 +58,14 @@
     [[ "${@}" =~ "--local" ]] && opt_local_conf=0 || :
     [[ "${@}" =~ "--dump"  ]] && opt_dump=0  || :
 
+
+    [[ "${@}" =~ --?(b|basis)[=:]([0-9]+) ]]; #opt_debug=$?;
+
+    opt_basis="${BASH_REMATCH[2]:-16}";
+
+    [[ "${@}" =~ "--12"  ]] && opt_basis=12 || :;
+    [[ "${@}" =~ "--16"  ]] && opt_basis=16 || :;
+
     if [ $opt_quiet   -eq 1 ]; then
        [ $opt_silly   -eq 0 ] && opt_verbose=0
        [ $opt_verbose -eq 0 ] && opt_debug=0
