@@ -28,7 +28,7 @@ from libstr import line_marker, line_comment, date_comment
 from libfile import rem_file, get_homedir, assert_file_exists
 from libsed import sed_add_block, sed_delete_block, sed_add_line
 
-test_profile="../../.testrc"
+test_profile="../../inf/.testrc"
 
 #===========================================================
 def source(rcfile, clean=False, update=False):
@@ -106,10 +106,10 @@ def profile_unlink(label, profile):
 #sort of like a unit test lol
 def unit_test():
   try:
-    file='../../.testrc'
-    file2='../../.testme'
-    file3='../../.morerc'
-    file4='../../.saverc'
+    file='../../inf/.testrc'
+    file2='../../inf/.include'
+    file3='../../inf/.morerc'
+    file4='../../inf/.saverc'
     env = source(file)
     environ.update(env)
 
