@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+export VAL1='banana'
+export VAL2="moop"
+VAL3='soop'
+VAL4='grape'
+VAL5='watermelon'
+XY=999
+PWD='mooooooo12121'
+
+
+
+#include_me
+
+
+
+
+
+
+
+
+
+
+
+
+
+

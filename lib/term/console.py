@@ -4,17 +4,26 @@
 
 #--------------------------------
 
+
+from os import path
+
+#===========================================================
+if __name__ == '__main__':
+  module_path = path.abspath(path.join('..'))
+  if module_path not in sys.path:
+    sys.path.append(module_path)
+
+  lib_path = path.abspath(path.join(path.dirname(__file__), '..'))
+  if lib_path not in sys.path:
+    sys.path.append(lib_path)
+#===========================================================
+
 from const   import const
 from colors  import rainbow_const_fg as color
 from printer import eprint, stderr, print_bar
 from tools   import esc_nl
 
 #===========================================================
-
-
-
-#===========================================================
-
 
 def stylize(str, style, reset=True):
     terminator = const.RESET if reset is True else ''

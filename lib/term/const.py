@@ -4,6 +4,20 @@
 
 #--------------------------------
 import sys
+
+from os import path
+
+#===========================================================
+if __name__ == '__main__':
+  module_path = path.abspath(path.join('..'))
+  if module_path not in sys.path:
+    sys.path.append(module_path)
+
+  lib_path = path.abspath(path.join(path.dirname(__file__), '..'))
+  if lib_path not in sys.path:
+    sys.path.append(lib_path)
+#===========================================================
+
 from tools import esc_attr, esc_cls, esc_nl
 
 #===========================================================

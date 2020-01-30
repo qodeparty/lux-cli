@@ -2,24 +2,31 @@
 # coding: utf-8
 # by QODEPARTY
 
-import os
-import sys
-import json
 
-#===========================================================
-if __name__ == '__main__':
-  module_path = os.path.abspath(os.path.join('..'))
-  if module_path not in sys.path:
-      sys.path.append(module_path)
-#===========================================================
+import sys
+from os import path
+import json
 
 import argparse
 
+#===========================================================
+if __name__ == '__main__':
+  module_path = path.abspath(path.join('..'))
+  if module_path not in sys.path:
+    sys.path.append(module_path)
+
+  lib_path = path.abspath(path.join(path.dirname(__file__), '..'))
+  if lib_path not in sys.path:
+    sys.path.append(lib_path)
+#===========================================================
+
+
+
 from toktools import read_lex_file
 
-from term2 import printer, eprint, stderr, debug, err, warn, info,\
-                  ok, silly, rainbow as color, term_const as term,\
-                  test_colors, test_printer, Printable
+from term import printer, eprint, stderr, debug, err, warn, info,\
+                ok, silly, rainbow as color, const as term,\
+                test_colors, test_printer, Printable
 
 
 

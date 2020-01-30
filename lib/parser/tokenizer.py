@@ -2,16 +2,23 @@
 # coding: utf-8
 # by QODEPARTY
 
-import os
 import sys
 import re
 
+from os import path
+
+
 #===========================================================
 if __name__ == '__main__':
-  module_path = os.path.abspath(os.path.join('..'))
+  module_path = path.abspath(path.join('..'))
   if module_path not in sys.path:
-      sys.path.append(module_path)
+    sys.path.append(module_path)
+
+  lib_path = path.abspath(path.join(path.dirname(__file__), '..'))
+  if lib_path not in sys.path:
+    sys.path.append(lib_path)
 #===========================================================
+
 
 from utils import SafeHash
 from tools import read_lex_file

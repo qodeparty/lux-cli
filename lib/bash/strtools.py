@@ -2,6 +2,23 @@
 # coding: utf-8
 # by QODEPARTY
 
+from os import path
+from datetime import datetime
+
+#===========================================================
+if __name__ == '__main__':
+  module_path = path.abspath(path.join('..'))
+  if module_path not in sys.path:
+    sys.path.append(module_path)
+
+  lib_path = path.abspath(path.join(path.dirname(__file__), '..'))
+  if lib_path not in sys.path:
+    sys.path.append(lib_path)
+#===========================================================
+
+from term import debug, err, warn, info, ok, silly, SP, NL
+
+
 #===========================================================
 
 def line_marker( label, mode='sh'):

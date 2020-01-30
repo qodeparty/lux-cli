@@ -4,14 +4,29 @@
 
 #--------------------------------
 
-import os
+
 import sys
 import pprint
+
+from os import path, fstat
+
+#===========================================================
+if __name__ == '__main__':
+  module_path = path.abspath(path.join('..'))
+  if module_path not in sys.path:
+    sys.path.append(module_path)
+
+  lib_path = path.abspath(path.join(path.dirname(__file__), '..'))
+  if lib_path not in sys.path:
+    sys.path.append(lib_path)
+#===========================================================
+
 
 from const import const;
 from tools import esc_attr, NL
 
 #===========================================================
+
 
 
 
@@ -21,7 +36,7 @@ stderr = sys.stderr.write
 
 
 def is_piped():
-  return True if os.fstat(0) != os.fstat(1) else False;
+  return True if fstat(0) != fstat(1) else False;
 
 #--------------------------------
 def eprint(*args, **kwargs):
@@ -85,7 +100,6 @@ def unit_test():
 #===========================================================
 
 if __name__ == '__main__':
-  import sys
   status = unit_test()
   sys.exit(status)
 

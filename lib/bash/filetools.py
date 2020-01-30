@@ -2,9 +2,10 @@
 # coding: utf-8
 # by QODEPARTY
 
-import os
+
 import sys
-import re
+
+from os import path, remove, rename
 
 from datetime import datetime
 from subprocess import check_output
@@ -14,15 +15,20 @@ from shutil import move
 
 #===========================================================
 if __name__ == '__main__':
-  module_path = os.path.abspath(os.path.join('..'))
+  module_path = path.abspath(path.join('..'))
   if module_path not in sys.path:
-      sys.path.append(module_path)
+    sys.path.append(module_path)
+
+  lib_path = path.abspath(path.join(path.dirname(__file__), '..'))
+  if lib_path not in sys.path:
+    sys.path.append(lib_path)
 #===========================================================
 
-from term import debug, err, warn, info, ok, silly, rainbow, term_const, NL, SP, RET
+
+from term import debug, err, warn, info, ok, silly, rainbow, const as term, NL
 
 #from sedtools import sed_find_block
-from shassert import assert_shell_perms, assert_file_exists
+from shassert import assert_shell_perms
 
 #===========================================================
 
@@ -43,14 +49,14 @@ def move_file(src,dest):
 def rename_file(src,dest):
   try:
     assert_shell_perms('rename')
-    os.rename(src,dest)
+    rename(src,dest)
   except FileNotFoundError as e:
     pass
 
 def rem_file(src):
   try:
     assert_shell_perms('rm')
-    if exists_file(src): os.remove(src)
+    if exists_file(src): remove(src)
   except FileNotFoundError as e:
     err(f'File [{src}] does not exist.')
 
@@ -74,6 +80,11 @@ def exists_dir(src):
 
 def get_homedir():
   return Path('~').expanduser()
+
+def assert_file_exists(file):
+  if not exists_file(file):
+    msg=f'{rainbow.RED}Required file {file} not found. Command not run.{term.RESET}'
+    raise FileNotFoundError(msg)
 
 #===========================================================
 
@@ -124,24 +135,7 @@ def unit_test():
   try:
     file='../.luxrc'
     file2='../.testme'
-    sed_delete_block('### test #','### test #',file)
-    sed_replace_kv('VAL2','moop',file)
-    sed_replace_kv('VAL3','soop',file)
-    sed_replace_kv('XY','999', file)
 
-    print(line_comment('hey girl', 'js'))
-    print(line_marker('hello', 'sh')[0])
-    print(line_marker('hello', 'sh')[1])
-
-    print(sed_find_block(*line_marker('hello', 'sh'),file))
-
-    date_st = date_comment( 'sh', 'Last Updated')
-
-    add_block(*line_marker('hey girl', 'sh'), f'''{date_st}{NL}
-      # you know I like that pussy
-    ''', file, False)
-
-    sed_insert_file_where('\#include_me',file2,file)
 
     return 0
   except KeyboardInterrupt:

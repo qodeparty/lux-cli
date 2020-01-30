@@ -5,6 +5,9 @@
 #--------------------------------
 
 
+import sys
+
+
 #===========================================================
 # dont bother importing these just use fx()
 
@@ -114,7 +117,6 @@ def unit_test():
 
 
 if __name__ == '__main__':
-  import sys
   status = unit_test()
   sys.exit(status)
 #--------------------------------
