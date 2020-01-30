@@ -4,18 +4,11 @@
 
 #--------------------------------
 
-import os
-import sys
-import subprocess
-import curses
-import itertools
-import pprint
-
-stderr = sys.stderr.write
-
-#--------------------------------
-
 class SafeHash(dict):
   def __missing__(self,key):
     return False
 
+#--------------------------------
+
+class UserError(Exception):
+  pass

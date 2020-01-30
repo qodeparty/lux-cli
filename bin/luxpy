@@ -10,18 +10,19 @@ import shutil
 import stat
 import pkgutil
 
+import lib.term as term
+import lib.parser as parser
+
+#local_path = os.path.dirname(os.path.realpath(__file__))
+
+#sys.path.append(local_path)
 
 #----------------------------------------------------
 # Const
 #----------------------------------------------------
 
-IS_PIPED = True if os.fstat(0) != os.fstat(1) else False
-#CAN_TERM = True if
-STDERR   = sys.stderr
-STDOUT   = sys.stdout
 
-
-print('Hello, World')
+#print('Hello, World')
 
 #----------------------------------------------------
 # API
@@ -41,7 +42,13 @@ cmd_exists = lambda x: shutil.which(x) is not None
 #----------------------------------------------------
 
 def main():
-  env()
-  print( support() )
+  #env()
+  term.debug_modules()
+  parser.test_lex_engine()
+  #term.debug_test()
+
+  #print('Local Path',term.local_path)
+  #print(sys.path)
+
 
 if __name__ == "__main__": main()
