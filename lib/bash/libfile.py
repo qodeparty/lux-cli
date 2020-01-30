@@ -5,11 +5,13 @@
 
 import sys
 
-from os import path, remove, rename
+from os import path, remove, rename, umask
+
+#removedirs rmdir replace stat walk listdir
 
 from datetime import datetime
 from subprocess import check_output
-from pathlib import Path
+from pathlib import Path #Path().rename()
 from shutil import move
 
 
@@ -28,7 +30,7 @@ if __name__ == '__main__':
 from term import debug, err, warn, info, ok, silly, rainbow, const as term, NL
 
 #from sedtools import sed_find_block
-from shassert import assert_shell_perms
+from libassert import assert_shell_perms
 
 #===========================================================
 
@@ -39,6 +41,8 @@ from shassert import assert_shell_perms
 
 
 #===========================================================
+def touch_file(src):
+  pass
 
 def move_file(src,dest):
   try:

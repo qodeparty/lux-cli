@@ -23,10 +23,10 @@ if __name__ == '__main__':
 
 from term import printer, eprint, stderr, debug, err, warn, info, ok, silly, NL, TAB, rainbow, const as term
 
-from filetools import rem_file, get_homedir, assert_file_exists
-from strtools import line_marker, line_comment, date_comment
-from shassert import assert_shell_perms
-from sedtools import sed_add_block, sed_delete_block, sed_add_line
+from libassert import assert_shell_perms
+from libstr import line_marker, line_comment, date_comment
+from libfile import rem_file, get_homedir, assert_file_exists
+from libsed import sed_add_block, sed_delete_block, sed_add_line
 
 test_profile="../../.testrc"
 

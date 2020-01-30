@@ -8,9 +8,6 @@ from os import path
 from subprocess import check_output
 
 
-
-
-
 #===========================================================
 if __name__ == '__main__':
   module_path = path.abspath(path.join('..'))
@@ -24,12 +21,12 @@ if __name__ == '__main__':
 
 #print(__name__,up_path,module_path,sys.path)
 
-from shassert import assert_shell_perms
-from filetools import rem_file, rename_file, assert_file_exists
-from strtools import line_marker, line_comment, date_comment
-
 from term import debug, err, warn, info, ok, silly, rainbow, \
                  const, NL
+
+from libassert import assert_shell_perms
+from libfile import rem_file, rename_file, assert_file_exists
+from libstr import line_marker, line_comment, date_comment
 
 #===========================================================
 

@@ -6,7 +6,6 @@
 import sys
 from os import path, environ
 
-
 #===========================================================
 if __name__ == '__main__':
   module_path = path.abspath(path.join('..'))
@@ -18,18 +17,26 @@ if __name__ == '__main__':
     sys.path.append(lib_path)
 #===========================================================
 
-
+from term import debug, err, warn, info, ok, silly, rainbow, const, NL
 from utils import UserError
 
-#===========================================================
+from libassert import assert_shell_perms
+from libfile import assert_file_exists, exists_file, rem_file
 
-class ShellPermissionError(UserError):
-  pass
-
-def assert_shell_perms(name):
-  perm = environ.get('ENABLE_PYTHON_SHELL_ACCESS')
-  if not perm:
-    msg=f'{rainbow.RED}Python shell access must be enabled for [{name}] command.{term_const.RESET}'
-    raise ShellPermissionError(msg)
 
 #===========================================================
+
+def git_build_id( cwd ): pass
+#cd $src;git rev-list HEAD --count)
+
+def git_branch_name( cwd ): pass
+#cd $src;git rev-parse --abbrev-ref HEAD)
+
+def git_vers( cwd ): pass
+#cd $src;git describe --abbrev=0 --tags
+
+def git_find_repos(): pass
+#buf=($(find_dirs "git" "${this}/")); ret=$?
+
+#===========================================================
+
