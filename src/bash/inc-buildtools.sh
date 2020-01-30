@@ -148,8 +148,8 @@
 		lux_build_all_mods
 		lux_build
 		lux_copy_res
-		lux_res_mods
-		lux_genlist
+		#lux_res_mods
+
 		lux_copy_www
 	}
 
@@ -392,6 +392,7 @@
 		do
 
 			chsum2=`$cmd_find $LUX_HOME/src -type f \( -name "*.styl" -o -name "*.css*" -o -name "*.js*" \) -mmin -0.3 -exec md5sum {}  \;`
+
 
 			if [[ $chsum1 != $chsum2 ]] ; then
 

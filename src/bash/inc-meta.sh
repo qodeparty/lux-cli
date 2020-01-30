@@ -90,6 +90,7 @@
 
 
 	function lux_need_align_repos(){
+		trace "NEED ALIGN"
 		[ -z "$LUX_WWW"  ] && missing+=( "$LUX_WWW" ) || :
 		[ -z "$LUX_CLI"  ] && missing+=( "$LUX_CLI" ) || :
 		[ -z "$LUX_DEV"  ] && missing+=( "$LUX_DEV" ) || :
@@ -131,7 +132,7 @@
 						*) silly "found ?? ($this)";;
 					esac
 				else
-					missing+=("Missing:$this")
+					missing+=("Unfound:$this")
 				fi
 			done
 

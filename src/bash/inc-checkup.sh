@@ -144,6 +144,7 @@
 		lux_pre_config_cli
 		lux_pre_config_bash_prof
 		#lux_pre_config_search_path
+
 		lux_pre_config_lux_home
 		lux_pre_config_set_homevars
 		#repair_home "$LUX_HOME" #only set with rc
@@ -346,7 +347,7 @@
 		LUX_HOME="$1"
 		lux_pre_config_set_homevars
 		[ -d "$LUX_HOME" ] && unstat STATE_LUX_HOME_DEF || :
-		#dtrace "Repaired LUX Home ($LUX_HOME)"
+		dtrace "Repaired LUX Home ($LUX_HOME)"
 	}
 
 	function repair_binvars(){
@@ -373,6 +374,7 @@
 	function prompt_home(){
 		if confirm "${lambda} ${blue}LUX_HOME$x is not set. Set the location manually (y/n)"; then
 			res=$(prompt_path "Where is \${blue}LUX_HOME\$x directory on \$blue\$HOSTNAME\$x" "Is this correct" "$LUX_HOME");ret=$?
+			LUX_HOME="$res"
 			#[ $ret -eq 1 ] && return 1;
 		else
 			:
@@ -508,10 +510,13 @@
 				repair_home "$LUX_HOME"
 			else
 				wtrace "Cant find Lux Home"
+				prompt_home
 			  [ $opt_skip_input -eq 1 ] && lux_make_rc || :
 			fi
 
 			#fatal requires user step
+
+
 		else
 			: #dtrace "found LUX Home ($LUX_HOME)"
 		fi
