@@ -143,8 +143,8 @@ def sed_add_line(line,src, force=False ):
 def unit_test():
   try:
     assert_shell_perms('sed')
-    file='../../.testrc'
-    file2='../../.testme'
+    file='../../inf/.testrc'
+    file2='../../inf/.include'
     sed_delete_block('# ----test:str---- #','# ----test:end---- #',file)
     sed_replace_kv('VAL2','moop',file)
     sed_replace_kv('VAL3','soop',file)

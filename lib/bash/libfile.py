@@ -12,7 +12,7 @@ from os import path, remove, rename, umask
 from datetime import datetime
 from subprocess import check_output
 from pathlib import Path #Path().rename()
-from shutil import move
+from shutil import move, copy2
 
 
 #===========================================================
@@ -47,6 +47,14 @@ def touch_file(src):
 def move_file(src,dest):
   try:
     assert_shell_perms('mv')
+
+  except FileNotFoundError as e:
+    pass
+
+def copy_file(src,dest):
+  try:
+    assert_shell_perms('mv')
+
   except FileNotFoundError as e:
     pass
 
@@ -60,12 +68,25 @@ def rename_file(src,dest):
 def rem_file(src):
   try:
     assert_shell_perms('rm')
-    if exists_file(src): remove(src)
+    if is_file(src): remove(src)
   except FileNotFoundError as e:
     err(f'File [{src}] does not exist.')
 
+def path_type(src):
+  ref=Path(src)
+  if ref.exists():
+    if ref.is_file(): return 'file'
+    elif ref.is_dir(): return 'dir'
+  return None
 
-def exists_file(src):
+def mkdir_rec(src):
+  try:
+    ref=Path(src)
+    ref.parent.absolute()
+    ref.parent.mkdir(parents=True, exist_ok=True)
+
+
+def is_file(src):
   try:
     ref=Path(src)
     ret=ref.is_file()
@@ -74,7 +95,7 @@ def exists_file(src):
   return ret
 
 
-def exists_dir(src):
+def is_dir(src):
   try:
     ref=Path(src)
     ret=ref.is_dir()
@@ -86,7 +107,7 @@ def get_homedir():
   return Path('~').expanduser()
 
 def assert_file_exists(file):
-  if not exists_file(file):
+  if not is_file(file):
     msg=f'{rainbow.RED}Required file {file} not found. Command not run.{term.RESET}'
     raise FileNotFoundError(msg)
 
@@ -137,8 +158,13 @@ def find_filetype(): pass
 #sort of like a unit test lol
 def unit_test():
   try:
-    file='../.luxrc'
-    file2='../.testme'
+    assert_shell_perms('mv')
+    file1='../../inf/.testrc'
+    file2='../../inf/.include'
+    dir1='../../inf/'
+    print(path_type(dir1))
+    print(path_type(file1))
+    print(path_type('./moo'))
 
 
     return 0
