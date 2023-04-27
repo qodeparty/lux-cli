@@ -1,0 +1,35 @@
+{
+  "name": "lux-cli",
+  "version": "0.2.0",
+  "description": "Lux CLI binary",
+  "main": "dist/lux.min.css",
+  "bin": {
+    "lux": "./bin/lux",
+    "luxconf": "./config"
+  },
+  "scripts": {
+    "clean": "bash ./bin/lux clean",
+    "make": "bash ./bin/lux clean make",
+    "help": "bash ./bin/lux help --force",
+    "prepublish": "bash ./bin/lux clean make"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://gitlab.com/qodeparty/lux.git"
+  },
+  "keywords": [
+    "lux",
+    "css",
+    "style",
+    "stylus",
+    "sass",
+    "bash"
+  ],
+  "author": "qodeparty",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://gitlab.com/qodeparty/lux-cli/issues"
+  },
+  "homepage": "https://gitlab.com/qodeparty/lux-cli#README",
+  "dependencies": {}
+}

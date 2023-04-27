@@ -1,0 +1,116 @@
+#!/usr/bin/env bash
+##------------------------------------------------------------------------------
+##==============================================================================
+##     Lux CLI  > lux watch 2 > lux.out  2>&1
+##       __
+##       \ \
+##        \ \
+##         > \
+##        / ^ \
+##       /_/ \_\
+##
+##  QodeParty (c) 2018
+##==============================================================================
+
+#TODO: the repair steps are too complex they should be atomic -- one repair per error
+#TODO: havent checked cases where the repos arent installed (cli/core/www)
+#TODO: repair for link/unlink
+#TODO: use printf formartting for usage/docs
+#TODO: create end-user only script without all the dev commands
+
+#-----------------------------------------------------------
+# Script
+#-----------------------------------------------------------
+	readonly script_pid=$$
+	readonly script_author="qodeninja"
+	readonly script_id="lux"
+	readonly script_prefix="LUX"
+	readonly script_rc_file=".luxrc"
+	readonly script_log_file="$script_id.log"
+	readonly script_lic="MIT License"
+					 script_entry="$0"
+
+	function include(){
+		source "${@}"
+	}
+#-------------------------------------------------------------------------------
+# Common Vars
+#-------------------------------------------------------------------------------
+
+##--save me
+	CPID="$$"
+
+	BIN_DIR="$( cd "$(dirname "$0")"   || exit; pwd)"
+	THIS_DIR="$( cd $BIN_DIR && cd ..  || exit; pwd)"
+	ROOT_DIR="$( cd $THIS_DIR && cd .. || exit; pwd)"
+
+	opt_verbose=0
+	opt_no_comments=1
+	opt_skip_input=1
+	opt_dev_mode=1
+
+	missing=()
+	__repo_list=( )
+	__alias_list=( )
+
+
+#-------------------------------------------------------------------------------
+# INCLUDES
+#-------------------------------------------------------------------------------
+
+	include $BIN_DIR/inc-vars.sh
+
+	include $BIN_DIR/inc-term.sh "${@}"
+
+	include $BIN_DIR/inc-doc.sh
+
+	include $BIN_DIR/inc-utils.sh
+
+	include $BIN_DIR/inc-filetools.sh
+
+	include $BIN_DIR/inc-meta.sh
+
+	include $BIN_DIR/inc-buildtools.sh
+
+	include $BIN_DIR/inc-checkup.sh
+
+	include $BIN_DIR/inc-api.sh
+
+#-------------------------------------------------------------------------------
+# Dispatch
+#-------------------------------------------------------------------------------
+
+	include $BIN_DIR/inc-dispatch.sh
+
+#-------------------------------------------------------------------------------
+# Main
+#-------------------------------------------------------------------------------
+
+	# function lux_checkup(){
+
+	# 	check_setup
+	# 	lux_repair
+
+
+	# 	check_setup
+
+	# 	#profile_unlink
+	# }
+
+
+	function main(){
+		[ -f "$LUX_RC" ] && source $LUX_RC || : #wtrace "Lux RC is missing. "
+		dispatch "$@"
+	}
+
+#-------------------------------------------------------------------------------
+# Driver
+#-------------------------------------------------------------------------------
+if [ "$0" = "-bash" ]; then
+	:
+else
+	#info "$0 $1"
+	args=("${@}")
+	args=( "${args[@]/\-*}" ); #delete anything that looks like an option
+	main "${args[@]}";ret=$?
+fi
