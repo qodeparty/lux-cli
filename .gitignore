@@ -11,7 +11,7 @@ dist
 build
 local-*
 *-local*
-*.bak
+*.bak*
 
 www/res/css/lux-*.css
 
