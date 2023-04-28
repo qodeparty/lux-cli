@@ -44,26 +44,67 @@
 	THIS_DIR="$( cd $BIN_DIR && cd ..  || exit; pwd)"
 	ROOT_DIR="$( cd $THIS_DIR && cd .. || exit; pwd)"
 
+
+	missing=()
+	__repo_list=( )
+	__alias_list=( )
+  __buf_list=1
+
+	LUX_INST=1
+
+#-------------------------------------------------------------------------------
+# Init Vars
+#-------------------------------------------------------------------------------
+
 	opt_verbose=0
 	opt_no_comments=1
 	opt_skip_input=1
 	opt_dev_mode=1
 
-	missing=()
-	__repo_list=( )
-	__alias_list=( )
+  opt_quiet=1
+  opt_force=1
+  opt_verbose=1
+  opt_silly=1
+  opt_debug=1
+  opt_local_conf=1
+  opt_basis=
+  opt_dump_col="$orange"
+  opt_dump=1
 
-	LUX_INST=1
+  [[ "${@}" =~ "--debug" ]] && opt_debug=0 || :
+  [[ "${@}" =~ "--info"  ]] && opt_verbose=0 || :
+  [[ "${@}" =~ "--silly" ]] && opt_silly=0 || :
+  [[ "${@}" =~ "--quiet" ]] && opt_quiet=0 || :
+  [[ "${@}" =~ "--force" ]] && opt_force=0 || :
+  [[ "${@}" =~ "--dev"   ]] && opt_dev_mode=0 || :
+  [[ "${@}" =~ "--local" ]] && opt_local_conf=0 || :
+  [[ "${@}" =~ "--dump"  ]] && opt_dump=0  || :
+
+
+  [[ "${@}" =~ --?(b|basis)[=:]([0-9]+) ]]; #opt_debug=$?;
+
+  opt_basis="${BASH_REMATCH[2]:-16}";
+
+  [[ "${@}" =~ "--12"  ]] && opt_basis=12 || :;
+  [[ "${@}" =~ "--16"  ]] && opt_basis=16 || :;
+
+  if [ $opt_quiet   -eq 1 ]; then
+     [ $opt_silly   -eq 0 ] && opt_verbose=0
+     [ $opt_verbose -eq 0 ] && opt_debug=0
+  fi
 
 
 #-------------------------------------------------------------------------------
 # INCLUDES
 #-------------------------------------------------------------------------------
+
+
+
+	include $BIN_DIR/inc-term.sh "${@}"
+
 	include $BIN_DIR/inc-portability.sh
 
 	include $BIN_DIR/inc-vars.sh
-
-	include $BIN_DIR/inc-term.sh "${@}"
 
 	include $BIN_DIR/inc-doc.sh
 
@@ -83,7 +124,7 @@
 #-------------------------------------------------------------------------------
 # Dispatch
 #-------------------------------------------------------------------------------
-
+	
 	include $BIN_DIR/inc-dispatch.sh
 
 #-------------------------------------------------------------------------------
@@ -104,17 +145,24 @@
 
 	function main(){
 		[ -f "$LUX_RC" ] && source $LUX_RC || : #wtrace "Lux RC is missing. "
-		dispatch "$@"
+		local ret args=("${@}")
+		dispatch "$@"; ret=$?;
+		[ -n "$err" ] && fatal "$err" || stderr "$out";
+		return $ret
 	}
 
 #-------------------------------------------------------------------------------
 # Driver
 #-------------------------------------------------------------------------------
-if [ "$0" = "-bash" ]; then
-	:
-else
-	#info "$0 $1"
-	args=("${@}")
-	args=( "${args[@]/\-*}" ); #delete anything that looks like an option
-	main "${args[@]}";ret=$?
-fi
+
+	if [ "$0" = "-bash" ]; then
+		:
+	else
+		#info "$0 $1"
+		#dflag "> $ROOT_DIR $THIS_DIR $BIN_DIR"
+		orig_args=("${@}")
+		#api_options "${orig_args[@]}"
+		args=( "${orig_args[@]/-?[0-9]*/}" ) #delete anything that looks like an option
+		main "${args[@]}";ret=$?
+
+	fi
