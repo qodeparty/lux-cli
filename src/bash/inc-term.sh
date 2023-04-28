@@ -14,6 +14,7 @@
     grey2=$(tput setaf 240)
     w=$(tput setaf 15)
     wz=$(tput setaf 248)
+
     lambda="\xCE\xBB"
     line="$(sed -n '2,2 p' $BASH_SOURCE)$nl"
     bline="$(sed -n '3,3 p' $BASH_SOURCE)$nl"
@@ -35,43 +36,6 @@
     bld="$(tput bold)"
     rvm="$(tput rev)"
 
-#-------------------------------------------------------------------------------
-# Init Vars
-#-------------------------------------------------------------------------------
-
-    opt_quiet=1
-    opt_force=1
-    opt_verbose=1
-    opt_silly=1
-    opt_debug=1
-    opt_local_conf=1
-    opt_basis=
-    opt_dump_col="$orange"
-    opt_dump=1
-
-    [[ "${@}" =~ "--debug" ]] && opt_debug=0 || :
-    [[ "${@}" =~ "--info"  ]] && opt_verbose=0 || :
-    [[ "${@}" =~ "--silly" ]] && opt_silly=0 || :
-    [[ "${@}" =~ "--quiet" ]] && opt_quiet=0 || :
-    [[ "${@}" =~ "--force" ]] && opt_force=0 || :
-    [[ "${@}" =~ "--dev"   ]] && opt_dev_mode=0 || :
-    [[ "${@}" =~ "--local" ]] && opt_local_conf=0 || :
-    [[ "${@}" =~ "--dump"  ]] && opt_dump=0  || :
-
-
-    [[ "${@}" =~ --?(b|basis)[=:]([0-9]+) ]]; #opt_debug=$?;
-
-    opt_basis="${BASH_REMATCH[2]:-16}";
-
-    [[ "${@}" =~ "--12"  ]] && opt_basis=12 || :;
-    [[ "${@}" =~ "--16"  ]] && opt_basis=16 || :;
-
-    if [ $opt_quiet   -eq 1 ]; then
-       [ $opt_silly   -eq 0 ] && opt_verbose=0
-       [ $opt_verbose -eq 0 ] && opt_debug=0
-    fi
-
-    __buf_list=1
 #-------------------------------------------------------------------------------
 # Sig / Flow
 #-------------------------------------------------------------------------------
@@ -102,9 +66,10 @@
 #-------------------------------------------------------------------------------
 
     function __print(){
-      local text color prefix
-      text=${1:-}; color=${2:-grey}; prefix=${!3:-};
-      [ $opt_quiet -eq 1 ] && [ -n "$text" ] && printf "${prefix}${!color}%b${x}\n" "${text}" 1>&2 || :
+      local text color prefix revc
+      text=${1:-}; color=${2:-grey}; prefix=${!3:-}; revc=${4:-}
+      [ -n "$revc" ] && revc=$rvm ||:
+      [ $opt_quiet -eq 1 ] && [ -n "$text" ] && printf "${prefix}${!color}${revc}%b${x}\n" "${text}" 1>&2 || :
     }
 
     function __printf(){
@@ -113,7 +78,8 @@
       [ $opt_quiet -eq 1 ] && [ -n "$text" ] && printf "${prefix}${!color}%b${x}" "${text}" 1>&2 || :
     }
 
-
+    function stderr(){ printf "${@}${x}\n" 1>&2; }
+    
     function    info(){ local text=${1:-}; [ $opt_debug   -eq 0 ] && __print "$lambda$text" "blue"; }
     function   silly(){ local text=${1:-}; [ $opt_silly   -eq 0 ] && __print "$dots$text" "purple"; }
     function   trace(){ local text=${1:-}; [ $opt_verbose -eq 0 ] && __print "$text"   "grey2"; }
@@ -121,7 +87,8 @@
     function  ptrace(){ local text=${1:-}; [ $opt_verbose -eq 0 ] && __print " $text$x" "pass"; }
     function  wtrace(){ local text=${1:-}; [ $opt_verbose -eq 0 ] && __print " $text$x" "delta"; }
 
-    function  dtrace(){ local text=${1:-}; [ $opt_dev_mode -eq 0 ] && __print "##[ $text ]##"   "purple"; }
+    function  dflag(){ local text=${1:-}; [ $opt_dev_mode -eq 0 ] && __print "##[ $text ]##"  "grey2"; }
+    function  dtrace(){ local text=${1:-}; [ $opt_dev_mode -eq 0 ] && __print "--$text"   "grey2"; }
 
     function   error(){ local text=${1:-}; __print " $text" "fail"; }
     function    warn(){ local text=${1:-}; __print " $text$x" "delta";  }
@@ -208,4 +175,7 @@
 
   #__print "$BASH_SOURCE from term $DIR yay $(dirname ${BASH_SOURCE[1]} && pwd) ||"
 
-  [ $opt_dev_mode -eq 0 ] && dtrace "DEV MODE ENABLED"
+  [ $opt_dev_mode -eq 0 ] && dflag "DEV MODE ENABLED" ||:
+
+
+  dtrace "loading ${BASH_SOURCE[0]}"

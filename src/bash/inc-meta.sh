@@ -1,13 +1,16 @@
 #!/usr/bin/env bash
 
 	#build and use it localy in devmode
-	[ $opt_dev_mode -eq 0 ] && LUX_RC="./.luxrc" || :
+	if [ $opt_dev_mode -eq 0 ]; then 
+	  LUX_RC="./.luxrc"
+	  dflag 'Using local .luxrc due to --dev'
+	fi
 
 
 	#OPT_USE="--use $LUX_EXT/cli-vars.js --with {lux_build:\"$script_build\",lux_vers:\"$script_vers\"}"
 	function lux_var_refresh(){
+		trace "${FUNCNAME[0]}"
 		#lux_align_repos
-		trace "lux vars call"
 		if [ -d "$LUX_HOME" ]; then
 
 			lux_gen_load
@@ -22,6 +25,7 @@
 
 			#info "$OPT_USE"
 		fi
+
 	}
 
 
@@ -52,6 +56,7 @@
 		fi
   }
 
+  #>todo
   function lux_cli_version(){
   	:
   }
@@ -314,8 +319,8 @@
 	}
 
 	function lux_load_rc(){
+		trace "${FUNCNAME[0]}"
 		[ -f "$LUX_RC" ] && info "Loading .luxrc file..." && source $LUX_RC && unstat STATE_LUX_RC_FILE || wtrace "Cant load Lux RC. Missing ($LUX_RC). "
-
 		#load rc file now we must have home bin and install
 	}
 
@@ -326,25 +331,5 @@
 
 	function lux_set_rc(){
 		[ -f "$1" ] && LUX_RC="$1"
-	}
-
-#-------------------------------------------------------------------------------
-# DEV FC
-#-------------------------------------------------------------------------------
-
-	function dev_fast_clean(){
-		if [[ "$script_entry" =~ "luxbin" ]]; then
-			if [ $opt_dev_mode -eq 0 ]; then
-				info "$ROOT_DIR/dist  $LUX_INSTALL_DIR  $ROOT_DIR/.luxrc"
-				rm -rf "$ROOT_DIR/dist"
-				rm -rf "$LUX_INSTALL_DIR"
-				rm -f "$ROOT_DIR/.luxrc"
-				profile_unlink #take rc out of profile
-			else
-				error "Fast clean requires [--dev] flag"
-			fi
-		else
-			error "Fast clean can only be run using luxbin"
-		fi
 	}
 

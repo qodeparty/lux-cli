@@ -564,7 +564,7 @@
 
 
 	function deploy_dist_home(){
-		info "deploy_dist_home"
+		trace "${FUNCNAME[0]}"
 
     dist_file="$ROOT_DIR/dist/lux"
 
@@ -582,3 +582,9 @@
 		return 1
 	}
 
+	function json_maker_run(){
+		add_var "test:1" "eat:candy"
+		lux_var_refresh
+		json_maker
+		#echo "$OPT_USE"
+	}

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+dtrace "loading ${BASH_SOURCE[0]}"
 
 	function find_dirs(){
 		info "Finding repo folders..."
@@ -81,7 +81,7 @@
 			#log "$(res $ret) Cannot Find? (Delete Complete)"
 			rm -f "${src}.bak"
 		else
-			error "BashRC wasn't found"
+			error "File (${src}) wasn't found. Cannot delete block $block_lbl"
 			ret=1;
 		fi
 
@@ -91,6 +91,7 @@
 
 	function file_find_block(){
 		local src block_lbl match_st match_end data res ret
+		trace "${FUNCNAME[0]}"
 		src="$1"; block_lbl="$2"; delim="$3"; ret=1
 		match_st=$(file_marker "str" "${block_lbl}" "${delim}")
 		match_end=$(file_marker "end" "${block_lbl}" "${delim}")
@@ -103,6 +104,7 @@
 
 	function profile_link(){
 		local ret res data
+		trace "${FUNCNAME[0]}"
 		[ ! -f "$LUX_RC" ] && lux_make_rc || :
 		if [ -f "$LUX_RC" ]; then
 			src="$BASH_PROFILE" #link to bashrc so vars are available to subshells?
@@ -130,9 +132,15 @@
 
 	function profile_unlink(){
 		local ret res data src lbl
+		trace "${FUNCNAME[0]}"
 		src="$BASH_RC"
 		lbl="$LUX_ID"
-		[ -f "$LUX_RC" ] && rm -f "$LUX_RC"
+		if [ -f "$LUX_RC" ]; then
+			trace "supposedly removing $LUX_RC"
+			rm "$LUX_RC"
+		else
+			warn "$LUX_RC was not found"
+		fi
 		res=$(file_del_block "$src" "$lbl" )
 		ret=$?
 		[ $ret -eq 0 ] && __print ".luxrc removed from $BASH_RC" "red" ||:

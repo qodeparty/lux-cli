@@ -65,3 +65,27 @@ function lux_publish_lux(){
 	deploy_dist_home
 }
 
+function lux_uninstall(){
+	:
+}
+
+#-------------------------------------------------------------------------------
+# DEV FC
+#-------------------------------------------------------------------------------
+
+function dev_fast_clean(){
+	if [[ "$script_entry" =~ "luxbin" ]]; then
+		if [ $opt_dev_mode -eq 0 ]; then
+			info "paths: $ROOT\n $ROOT_DIR/dist\n $LUX_INSTALL_DIR\n $ROOT_DIR/.luxrc"
+			rm -rf "$ROOT_DIR/dist"
+			rm -rf "$LUX_INSTALL_DIR"
+			rm -f "$ROOT_DIR/.luxrc"
+			profile_unlink #take rc out of profile
+		else
+			error "Fast clean requires [--dev] flag"
+		fi
+	else
+		error "Fast clean can only be run using luxbin"
+	fi
+}
+

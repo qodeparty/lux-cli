@@ -5,6 +5,6 @@
 # EXTERNAL FUNCS
 #----------------------------------------------------
 
-cmd_find='gfind'
+cmd_find='find' #linux mode change to gfind for mac
 
-cmd_sed='gsed'
+cmd_sed='sed'

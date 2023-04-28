@@ -14,6 +14,22 @@
 		fi
 	}
 
+	#> todo: portability
+	function list_fx(){
+		trace "${FUNCNAME[0]} ($1)"
+		local path="$BIN_DIR/$1"
+		if [ -f $path ]; then
+			grep "^[[:space:]]*function" $path | awk '{print $2}' | tr -d '{()';
+			info "should have listed fx"
+		else
+			warn "Not a file $path"
+		fi
+	}
+
+
+	function echo_var(){
+		quiet 0; echo -e "$1"
+	}
 
   #function fnmatch(){ case "$2" in $1) return 0 ;; *) return 1 ;; esac ; }
 	function in_string(){ [ -z "${2##*$1*}" ]; }

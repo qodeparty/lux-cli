@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+	dtrace "loading ${BASH_SOURCE[0]}"
+
 	#this changes with --dev enabled
 	LUX_RC="$HOME/.luxrc"
 
@@ -46,13 +48,13 @@
 	#TODO:replace with function call?
 	if [ -n "$BASH_USR_BIN" ]; then
 		QODEPARTY_INSTALL_DIR="$BASH_USR_BIN/qodeparty"
-		LUX_INSTALL_DIR="$QODEPARTY_INSTALL_DIR/lux"
+		LUX_INSTALL_DIR="$QODEPARTY_INSTALL_DIR" #removed /lux path
 		#LUX_INSTALL_BIN="$LUX_INSTALL_DIR/lux"
 	fi
 	#----------------------------------------------
 
 	#Now load RC to generate sub vars
-	[ -f "$LUX_RC" ] && source $LUX_RC || : # printf "Cant find Lux RC"
+	[ -f "$LUX_RC" ] && source $LUX_RC || warn "Cant find Lux RC"
 
   #----------------------------------------------
 
