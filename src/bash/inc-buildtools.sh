@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 
-
-
-
+  dtrace "loading ${BASH_SOURCE[0]}"
 
 	function lux_user_config(){
 		local list this i
@@ -480,9 +478,14 @@
 #these sed functions need some love but they work
 
 	function search_replace_bash(){
+		trace "${FUNCNAME[0]}"
+
+		silly "$1"
+
 		target="$1"
 		no_comments="$2"
 		res=($(grep -E '^[[:space:]]*include' $target -n | awk '{print $1 $3}'))
+		docs=($(grep -E '^#[[:space:]]*doc_include' $target -n | awk '{print $1 $3}'))
 		lines=()
 		files=()
 		real=()
@@ -510,12 +513,13 @@
 
 			qref=$(quoteRe "include $ref")
 
-			#info "$ref $qref"
+			silly "$val"
 			insert_wh_replace "$val" "$tmp_target" "$qref"
 
 			#sed -i.bak -e "/${qref}/d" "$target" #delete line number
 			name=$(basename $ref)
 			data="$bline\n## import file:${name%%\.sh*} ##\n$bline"
+
 
 			#info "Sed Replace Marker ${qref}"
 			$cmd_sed -i.bak -e "s|.*${qref}.*|${data}|i" $tmp_target
@@ -529,25 +533,32 @@
 				qref="^[[:space:]]*${qref}[^#]"
 			fi
 
+
+
 			#info "$qref"
 			$cmd_sed -i.bak -e "15,\${ /${qref}/d }" "$tmp_target"
 
 		done
 
-		#lookahead dont work in sed
-		# s|(?=[[:print:]]+)[[:space:]]*[#].*||i
-		#sed -i.bak -e "15,\${ s/[[:space:]][^\W#]*[#][^#|\n]+.*//i }" "$tmp_target"
 		$cmd_sed -i.bak "/^$/d" "$tmp_target"
+
+		cat $BIN_DIR/doc.txt >> "$tmp_target"
 		echo "$tmp_target"
 	}
 
 	#note:this only makes sense in cli dir
 	function make_cli_dist(){
-		#dtrace "$ROOT_DIR"
+		trace "${FUNCNAME[0]}"
+
 		build="$(cd $ROOT_DIR && git rev-list HEAD --count).$(date +%s)"
 		wtrace "Lux CLI Dist build is $build"
 
+
+
 		src_file="${1:-$ROOT_DIR/src/bash/luxbin}" #this is where main template
+
+		silly "$1 $src_file"
+
 		tmp_file=$(search_replace_bash "$src_file" "$2")
 		dist_file="$ROOT_DIR/dist/lux"
 
@@ -566,6 +577,7 @@
 	function deploy_dist_home(){
 		trace "${FUNCNAME[0]}"
 
+		silly "Installing to Lux CLI to Lux Stylus project (LUX_HOME)"
     dist_file="$ROOT_DIR/dist/lux"
 
     if [ -d "$LUX_HOME" ]; then
@@ -583,6 +595,7 @@
 	}
 
 	function json_maker_run(){
+		trace "${FUNCNAME[0]}"
 		add_var "test:1" "eat:candy"
 		lux_var_refresh
 		json_maker

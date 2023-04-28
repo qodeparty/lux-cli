@@ -312,6 +312,7 @@
 	function lux_dump_rc(){
 		if [ -f "$LUX_RC" ]; then
 			echo $line${nl}
+			silly "$LUX_RC"
 			cat "$LUX_RC"
 		else
 			warn "Lux RC doesnt exist. ($LUX_RC)"
@@ -326,7 +327,14 @@
 
 
 	function lux_reset_rc(){
-		[ -f "$LUX_RC" ] && rm "$LUX_RC"
+		trace "${FUNCNAME[0]}"
+		if [ -f "$LUX_RC" ]; then
+			trace "supposedly removing $LUX_RC"
+			rm "$LUX_RC"
+		else
+			warn "$LUX_RC was not found"
+		fi
+		
 	}
 
 	function lux_set_rc(){

@@ -2,6 +2,7 @@
 
 
 function lux_make_www(){
+	trace "${FUNCNAME[0]}"
 	opt_debug=0;
 	case $1 in
 		push) shift; lux_copy_www; lux_push_www "$1";;
@@ -11,6 +12,7 @@ function lux_make_www(){
 
 
 function lux_make_cli(){
+	trace "${FUNCNAME[0]}"
 	require_entry "Cant compile lux from compiled lux! hehe nice try though ($script_entry)"
 	opt_debug=0;
 	make_cli_dist "$1" "nocomments"
@@ -21,6 +23,7 @@ function lux_make_cli(){
 
 function lux_search_files(){
 	#TODO:PWD should be LUX_HOME
+	trace "${FUNCNAME[0]}"
 	IFS=
 	flags="-HiREl"
 	case $1 in
@@ -37,12 +40,14 @@ function lux_search_files(){
 
 
 function lux_publish_dist(){
+	trace "${FUNCNAME[0]}"
 	require_entry "Cant publish lux from compiled lux! the universe will collapse! ($script_entry)"
 
 	#need some checks here
 	if [ -n "$LUX_DEV_BIN" ]; then
 
 		#LUX_INSTALL_BIN="$LUX_INSTALL_DIR"
+		silly "Installing to Lux CLI to user's bin directory"
 
 		this_exec="$LUX_DEV_BIN/luxbin"
 		this_dist="$ROOT_DIR/dist/lux"
@@ -50,19 +55,23 @@ function lux_publish_dist(){
 		#not sure why I need this in OSX
 		mkdir -p "$ROOT_DIR/dist"
 
-		[ ! -d "$LUX_INSTALL_DIR" ] && mkdir -p "$LUX_INSTALL_DIR"
-		[ -f "$LUX_INSTALL_DIR" ] && cp "$LUX_INSTALL_DIR" "${LUX_INSTALL_DIR}.bak" || :
+		
+		if [ -n "$LUX_INSTALL_DIR" ]; then 
 
-		cp "$this_dist" "$LUX_INSTALL_DIR"
-		info "Publishing dist to $LUX_INSTALL_DIR"
+			[ ! -d "$LUX_INSTALL_DIR" ] && mkdir -p "$LUX_INSTALL_DIR"
+			[ -f "$LUX_INSTALL_DIR" ] && cp "$LUX_INSTALL_DIR" "${LUX_INSTALL_DIR}.bak" || :
+
+			cp "$this_dist" "$LUX_INSTALL_DIR"
+			info "Publishing dist to $LUX_INSTALL_DIR"
+
+		else
+			err='LUX_INSTALL_DIR undefined, cannot publish!'
+			silly "dirs ($ROOT_DIR) ($LUX_INSTALL_DIR) "
+		fi
 
 	else
 		: #error
 	fi
-}
-
-function lux_publish_lux(){
-	deploy_dist_home
 }
 
 function lux_uninstall(){
@@ -74,6 +83,7 @@ function lux_uninstall(){
 #-------------------------------------------------------------------------------
 
 function dev_fast_clean(){
+	trace "${FUNCNAME[0]}"
 	if [[ "$script_entry" =~ "luxbin" ]]; then
 		if [ $opt_dev_mode -eq 0 ]; then
 			info "paths: $ROOT\n $ROOT_DIR/dist\n $LUX_INSTALL_DIR\n $ROOT_DIR/.luxrc"

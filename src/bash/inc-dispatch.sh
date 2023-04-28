@@ -9,7 +9,7 @@ dtrace "loading ${BASH_SOURCE[0]}"
 #-------------------------------------------------------------------------------
 	function dispatch(){
 		#log_debug "[fx:$FUNCNAME] args:$#"
-		local call ret c= cmd_str= arg
+		local call ret c= c2= cmd_str= arg
 
 		# if [ -f "$LUX_USER_CONF" ]; then
 		# 	add_var "local_conf:true" "local_conf_path:$LUX_USER_CONF"
@@ -35,9 +35,8 @@ dtrace "loading ${BASH_SOURCE[0]}"
 			rep*)     opt_skip_input=1; c='lux_repair'; ret=$?;;
 			fc|fclean)dev_fast_clean;;
 			dist)     c='lux_make_cli';;
-			cpub*)    c='lux_make_cli && lux_publish_dist';;
-			cdist)    c='lux_publish_dist';	break;;
-			cphome)   c='lux_make_cli && lux_publish_lux';;
+			pub*)     c='lux_publish_dist';;
+			cphome)   c='deploy_dist_home';;
 			cgen)     ;;
 			gen)      ;;
 			link)     c='profile_link';;
@@ -89,11 +88,9 @@ dtrace "loading ${BASH_SOURCE[0]}"
 
     cmd_str+=$c;
 
-    if [ -n "$arg" ]; then
-      cmd_str+=" $arg";
-    fi
+    [ -n "$arg" ] && cmd_str+=" $arg";
 
-    #info "CMD:$cmd_str"
+    dtrace "CMD:$cmd_str"
     #stderr "fx=> $cmd_str";
     $cmd_str;ret=$?;
     [ -n "$err" ] && return 1;

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+  dtrace "loading ${BASH_SOURCE[0]}"
 
 	status_err=()
 	err_vals=()
@@ -357,7 +357,7 @@
 			QODEPARTY_INSTALL_DIR="$BASH_USR_BIN/qodeparty"
 			#LUX_INSTALL_DIR="$QODEPARTY_INSTALL_DIR/lux"
 			LUX_INSTALL_DIR="$QODEPARTY_INSTALL_DIR"
-			LUX_INSTALL_BIN="$LUX_INSTALL_DIR/lux"
+			LUX_INSTALL_BIN="$QODEPARTY_INSTALL_DIR/lux"
 			dtrace "Repair BINVARS unsets"
 			[ -n "$LUX_INSTALL_DIR" ] && [ -d "$LUX_INSTALL_DIR" ] && unstat STATE_LUX_INST_DEF || :
 			[ -n "$LUX_INSTALL_BIN" ] && [ -f "$LUX_INSTALL_BIN" ] && { unstat STATE_LUX_IBIN_DEF; unstat STATE_LUX_IBIN_FILE; } || :

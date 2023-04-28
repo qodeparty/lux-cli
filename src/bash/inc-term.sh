@@ -80,7 +80,7 @@
 
     function stderr(){ printf "${@}${x}\n" 1>&2; }
     
-    function    info(){ local text=${1:-}; [ $opt_debug   -eq 0 ] && __print "$lambda$text" "blue"; }
+    function    info(){ local text=${1:-}; [ $opt_debug   -eq 0 ] && __print "$lambda $text" "blue"; }
     function   silly(){ local text=${1:-}; [ $opt_silly   -eq 0 ] && __print "$dots$text" "purple"; }
     function   trace(){ local text=${1:-}; [ $opt_verbose -eq 0 ] && __print "$text"   "grey2"; }
     function  ftrace(){ local text=${1:-}; [ $opt_verbose -eq 0 ] && __print " $text"   "fail"; }

@@ -101,7 +101,35 @@ dtrace "loading ${BASH_SOURCE[0]}"
 		return $ret;
 	}
 
+	
+	#sed block parses self to find meta data
+	function sed_block(){
+		local id="$1" src="${2:-$BASH_SOURCE}" pre="^[#]+[=]+" post=".*" str end;
+		str="${pre}${id}[:]?[^\!=\-]*\!${post}";
+		end="${pre}\!${id}[:]?[^\!=\-]*${post}";
+		sed -rn "1,/${str}/d;/${end}/q;p" $src | tr -d '#'; 
+	}
 
+	#prints content between sed block
+	function block_print(){
+		local lbl="$1" src="$2" direct="$3" IFS res;
+		if [ -z $direct ]; then
+			res=$(sed_block $lbl $src);
+		else 
+			res=$(awk '{if ($1 ~ /^#=/) {next}; sub(/^#/,"",$1); print}' $3)
+		fi
+		if [ ${#res} -gt 0 ]; then
+			while IFS= read -r line; do
+				[[ $lbl =~ doc*|inf* ]] && line=$(eval "printf '%b' \"$line\"");
+				echo "$line"
+			done  <<< "$res";
+		else
+			return 1;
+		fi
+	}
+#====================================doc:help!==================================
+#test
+#====================================!doc:help==================================
 	function profile_link(){
 		local ret res data
 		trace "${FUNCNAME[0]}"
@@ -135,14 +163,9 @@ dtrace "loading ${BASH_SOURCE[0]}"
 		trace "${FUNCNAME[0]}"
 		src="$BASH_RC"
 		lbl="$LUX_ID"
-		if [ -f "$LUX_RC" ]; then
-			trace "supposedly removing $LUX_RC"
-			rm "$LUX_RC"
-		else
-			warn "$LUX_RC was not found"
-		fi
+		lux_reset_rc
 		res=$(file_del_block "$src" "$lbl" )
 		ret=$?
-		[ $ret -eq 0 ] && __print ".luxrc removed from $BASH_RC" "red" ||:
+		[ $ret -eq 0 ] && __print "luxrc block removed from $BASH_RC" "red" ||:
 	}
 
